@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Lobby extends Model
+{
+    //
+    protected $table = 'lobby';
+
+    protected $fillable = [
+        'name',
+        'lobby_code',
+        'user_id'
+    ];
+
+    public function subjects()
+    {
+        return $this->hasMany(Subjects::class);
+    }
+}

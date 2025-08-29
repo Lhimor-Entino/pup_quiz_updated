@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Participants extends Model
+{
+    //
+    protected $fillable = [
+        'team',
+        'members',
+        'score',
+        'archive',
+        'lobby_code',
+        'prev_answer',
+        'prev_answer_correct',
+
+    ];
+}
