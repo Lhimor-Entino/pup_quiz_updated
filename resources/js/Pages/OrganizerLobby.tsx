@@ -115,6 +115,7 @@ const OrganizerLobby = (props: Props) => {
     }
 
     const handleClickCategory = (code: string) => {
+     
         router.get(`lobbyCategory/${code}`)
     }
     useEffect(() => {

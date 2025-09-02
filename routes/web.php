@@ -92,8 +92,8 @@ Route::get('/lobbyCategory/{id}', function ($lobbyCode) {
         ->where('lobby_code', $lobbyCode)
         ->get();
 
-    $controller = app(QuizEventController::class);
-    $state = $controller->closeEvent($lobbies[0]->id);
+    // $controller = app(QuizEventController::class);
+    // $state = $controller->closeEvent($lobbies[0]->id,0);
     return Inertia::render('LobbyCategory', [
         'lobbies' => $lobbies,
         'id' =>   $lobbies[0]->id
@@ -354,7 +354,7 @@ Route::get('/organizer-lobbies', [LobbyController::class, 'getOrganizerLobby'])-
 Route::get('/lobby-status/{id}', [LobbyController::class, 'lobbyStatus'])->name('lobbyStatus');
 Route::post('/add-subject-quiz', [SubjectQuestionController::class, 'store'])->name('add-subject-quiz');
 Route::get('/getLobbyQuestion/{lobby_id}/{subject_id}', [SubjectQuestionController::class, 'getLobbyQuestion'])->name('getLobbyQuestion');
-Route::get('/updateScore/{id}/{score}/{ans}/{question}/{lobby_id}/{question_id}', [ParticipantController::class, 'updateScore'])->name('updateScore');
+Route::get('/updateScore/{id}/{score}/{ans}/{question}/{lobby_id}/{question_id}/{q_type}', [ParticipantController::class, 'updateScore'])->name('updateScore');
 Route::get('/leaderboard/{id}', [ParticipantController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/currentQuestionLeaderboard/{id}/{question_id}', [ParticipantController::class, 'currentQuestionLeaderboard'])->name('currentQuestionLeaderboard');
 Route::get('/participant-code-update/{id}/{code}', [ParticipantController::class, 'updateTeamCode'])->name('participant-code-update');

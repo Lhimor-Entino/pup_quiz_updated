@@ -3,9 +3,12 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { Button } from '@/Components/ui/button';
 import Footer from '@/CustomComponents/Footer';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Home } from 'lucide-react';
 import { FormEventHandler } from 'react';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -113,7 +116,7 @@ export default function Login({
                             </Link>
                         )}
                     </div>
-                    <div className='flex justify-center'>
+                    <div className='flex justify-center flex-col items-center gap-y-5'>
                     <PrimaryButton
                         className=" w-4/5 bg-red-600 text-white px-8 py-4 rounded-[50px] hover:bg-red-600 transition-colors mt-8 text-xl font-semibold text-center flex justify-center items-center"
                         style={{
@@ -125,6 +128,14 @@ export default function Login({
                     >
                         Login
                     </PrimaryButton>
+
+                    <Button className=" w-4/5 px-8 py-4 flex items-center justify-center gap-x-3" variant={"link"} type={"button"} 
+                    onClick={() => 
+                        router.get("/")
+                    }>
+                        <Home />
+                        Home
+                    </Button>
                     </div>
 
                 </div>

@@ -36,7 +36,7 @@ class QuizEventController extends Controller
         $subject = Subjects::where("lobby_id", $lobby->id)->first();
      
         if ($subject) {
-     
+            
             SubjectQuestion::where('subject_id',$subject_id)->update([
                 'archive' => 0
             ]);

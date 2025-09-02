@@ -132,7 +132,7 @@ export default function SubjectQuestionForm() {
         );
     };
 
-    const handleDeleteQuestion = async (question) => {
+    const handleDeleteQuestion = async (question,elId) => {
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: `Delete ${question.question}? This cannot be undone!`,
@@ -156,7 +156,10 @@ export default function SubjectQuestionForm() {
                         'Deleted!',
                         `${question.question} has been deleted.`,
                         'success'
-                    );
+                    ).then(() => {
+                        document.getElementById(elId).style.display = "none"
+                    });
+
                 }
             } catch (error) {
                 console.log(error)
@@ -201,7 +204,7 @@ export default function SubjectQuestionForm() {
                         {
                             easy_questions.length > 0 ?
                                 easy_questions?.map((q, index) =>
-                                    <TableRow key={q.id}>
+                                    <TableRow key={`easy${q.id}` } id={`easy-${q.id}`}>
                                         <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
                                         <TableCell>{q.type}</TableCell>
                                         <TableCell>
@@ -231,7 +234,7 @@ export default function SubjectQuestionForm() {
                                         <TableCell>
                                             <div className="flex items-center justify-evenly space-x-2">
                                                 <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q)} className="w-4 h-4 text-red-600" />
+                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q,`easy-${q.id}`)} className="w-4 h-4 text-red-600" />
                                                 </div>
                                                 <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
                                                     <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
@@ -266,7 +269,7 @@ export default function SubjectQuestionForm() {
                         {
                             average_questions.length > 0 ?
                                 average_questions?.map((q, index) =>
-                                    <TableRow key={q.id}>
+                                    <TableRow key={q.id} id={`average-${q.id}`}>
                                         <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
                                         <TableCell>{q.type}</TableCell>
                                         <TableCell>
@@ -296,7 +299,7 @@ export default function SubjectQuestionForm() {
                                         <TableCell>
                                             <div className="flex items-center justify-evenly space-x-2">
                                                 <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q)} className="w-4 h-4 text-red-600" />
+                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q,`average-${q.id}`)} className="w-4 h-4 text-red-600" />
                                                 </div>
                                                 <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
                                                     <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
@@ -331,7 +334,7 @@ export default function SubjectQuestionForm() {
                         {
                             hard_questions.length > 0 ?
                                 hard_questions?.map((q, index) =>
-                                    <TableRow key={q.id}>
+                                    <TableRow key={q.id} id={`hard-${q.id}`}>
                                         <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
                                         <TableCell>{q.type}</TableCell>
                                         <TableCell>
@@ -361,7 +364,7 @@ export default function SubjectQuestionForm() {
                                         <TableCell>
                                             <div className="flex items-center justify-evenly space-x-2">
                                                 <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q)} className="w-4 h-4 text-red-600" />
+                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q,`hard-${q.id}`)} className="w-4 h-4 text-red-600" />
                                                 </div>
                                                 <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
                                                     <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />

@@ -102,6 +102,8 @@ class ParticipantController extends Controller
             ->orderBy('score', 'desc')
             ->orderBy('created_at', 'asc') // if scores are tied, earlier entry comes first
             ->get();
+
+            
     }
     // public function currentQuestionLeaderboard($id, $question_id)
     // {
@@ -195,7 +197,7 @@ class ParticipantController extends Controller
     }
 
 
-    public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id)
+    public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id,$q_type)
     {
 
 
@@ -206,7 +208,9 @@ class ParticipantController extends Controller
         $newScore = $participant->score + $score;
         $prev_ans = $ans;
         // 3. Update the score
-        if ($score >= 0) {
+
+        
+        if ($score >= 0 && $q_type !=="short-answer") {
             $participant->score = $newScore;
         }
 

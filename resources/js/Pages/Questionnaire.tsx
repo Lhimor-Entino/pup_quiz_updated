@@ -9,7 +9,7 @@ import LoadingText from '@/CustomComponents/Loader';
 import { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { CheckCheckIcon, CheckIcon, FileQuestionIcon, Loader, Loader2Icon, NotepadTextDashed, PrinterIcon, TrophyIcon, X } from 'lucide-react';
+import { CheckCheckIcon, CheckIcon, FileQuestionIcon, Loader, Loader2Icon, NotepadTextDashed, PrinterIcon, RefreshCcw, TrophyIcon, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react'
 import Swal from 'sweetalert2';
 
@@ -89,6 +89,8 @@ const Questionnaire = () => {
   }, []);
 
   const updateScore = async (score: any, option, short_ans?: any) => {
+
+
     if (auth.user) return
 
     try {
@@ -106,10 +108,15 @@ const Questionnaire = () => {
         ans = short_ans
       }
       if (currentQuestion['type'] == "short-answer") {
-        ans = option
+        if (option == null || option == "null") {
+          ans = "No Answer"
+        } else {
+          ans = option
+        }
+
       }
 
-      await axios.get(`/updateScore/${team_id}/${score}/${ans}/${currentQuestion['question']}/${id}/${currentQuestion['id']}`)
+      await axios.get(`/updateScore/${team_id}/${score}/${ans}/${currentQuestion['question']}/${id}/${currentQuestion['id']}/${currentQuestion['type']}`)
 
       sumbmitAlert()
 
@@ -590,6 +597,18 @@ const Questionnaire = () => {
   }, [seconds, state]);
 
   useEffect(() => {
+    if (seconds == 0) {
+      if (auth.user) return
+      if (!currentQuestion) return
+      const type = currentQuestion['type']
+      if (type == "short-answer") {
+        updateScore(currentQuestion['points'], selectedOption)
+        return
+      }
+    }
+  }, [seconds])
+
+  useEffect(() => {
     if (currentQuestion) {
       setSeconds(currentQuestion['timeLimit'])
       setLevel(currentQuestion['difficulty'])
@@ -638,7 +657,7 @@ const Questionnaire = () => {
   }, [selectedLevel])
 
   const restricted_state = ["timer-started", "options-revealed", "over-all-leaderboard", "finished", "answer-revealed", "leaderboard-revealed"]
-  const e_state = ["timer-started", "options-revealed",   "answer-revealed",]
+  const e_state = ["timer-started", "options-revealed", "answer-revealed",]
   const myLevels = ["easy", "average", "difficult"]
   return (
     <div className="min-h-screen bg-yellow-200 pt-8">
@@ -756,14 +775,25 @@ const Questionnaire = () => {
 
 
         {/* // SHORT ANSWER  MODAL FOR ORGANIZER */}
-        <Dialog open={particapantShortAns.length > 0 ? true : false}>
+        <Dialog
+          open={particapantShortAns.length > 0 ? true : false}
+
+        >
 
           <DialogContent className="bg-gradient-to-br from-orange-50 to-white border border-orange-200 shadow-xl w-[800px] max-w-[95vw]">
 
             <DialogHeader>
               <DialogTitle>
-                <h1 className="text-2xl font-bold text-orange-800 mb-4">Participant Answers</h1>
+                <div className='flex items-center justify-between w-[95%]'>
+                  <h1 className="text-2xl font-bold text-orange-800 mb-4">Participant Answers</h1>
+
+                </div>
+                <Button onClick={() => getParticipantShortAnswer()} className='bg-orange-700 hover:bg-orange-600'>
+                  <RefreshCcw />
+                  Refetch Answers
+                </Button>
                 <div className="flex items-center gap-x-3 mt-3 bg-white/80 p-4 rounded-xl border border-orange-100 shadow-sm">
+
                   <p className="text-orange-700 font-medium">Question:</p>
                   <p className="text-orange-900 uppercase">{currentQuestion ? currentQuestion['question'] : ""} ?</p>
                 </div>
@@ -931,10 +961,10 @@ const Questionnaire = () => {
               </Button>
             </div> : ""
         }
-        
+
 
         {
-          auth?.user && state == "finished" ||  itemNumber == items && auth?.user  && state !=""  &&  !e_state.includes(state)   ?
+          auth?.user && state == "finished" || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
             <div className='flex gap-x-2 justify-end'>
               <Button disabled={loading} className='bg-orange-600' onClick={() => handleCloseEvent()}>
                 <LoadingText loading={loading} text="Loading next question please wait..." normal_text='Send All to lobby' />
@@ -1161,13 +1191,18 @@ const Questionnaire = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-1/4 text-orange-700 font-semibold">Rank & Team</TableHead>
-                  <TableHead className="w-1/2 text-orange-700 font-semibold">Previous Answer</TableHead>
+       
+                  {
+                     state == "finished" || state != "over-all-leaderboard" ?
+                    <TableHead className="w-1/2 text-orange-700 font-semibold">Previous Answer</TableHead> :""
+                  }
+
                   <TableHead className="w-1/2 text-orange-700 font-semibold">Total Points</TableHead>
                   <TableHead className="w-1/4 text-orange-700 font-semibold text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-
+                {/* {JSON.stringify(leaderboard)} */}
                 {leaderboard.map((rank, index) => (
                   <TableRow key={rank.rank} className={`${rank.id == team_id ? "bg-orange-500/50 rounded-md hover:bg-orange-500/50" : "hover:bg-orange-200/50"}  transition-colors duration-200`}>
                     <TableCell className="font-medium">
@@ -1180,15 +1215,21 @@ const Questionnaire = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
-                        {rank.prev_answer || "--"}
-                      </div>
-                    </TableCell>
+         
+                    {
+               state == "finished" ||state != "over-all-leaderboard" ?
+                      <TableCell>
+                        <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
+                          {rank.prev_answer || "--"}
+                        </div>
+                      </TableCell>:""
+                    }
+
                     <TableCell>
 
                       <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
-                        {rank.score <= 0 ? 0 : rank.score}
+                        {state != "over-all-leaderboard" ? currentQuestion ? currentQuestion['points'] : "" : rank.score <= 0 ? 0 : rank.score}
+
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -1263,9 +1304,9 @@ const Questionnaire = () => {
             <p>Result will be out on the leaderboard</p>
           </div> : ""
       }
-   
+
       {
-        state == "finished" && auth?.user ||  itemNumber == items && auth?.user && state !=""  &&  !e_state.includes(state) ?
+        state == "finished" && auth?.user || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
           <div className=' w-full flex justify-center'>
             {/* 
           <Button onClick={() => handleGenerateReport()}>
