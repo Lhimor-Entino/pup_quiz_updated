@@ -165,7 +165,7 @@ class LobbyController extends Controller
         return 1;
     }
     public function revealOptions($id, $subject_id)
-    {   
+    {
 
 
         // First, update the lobby, then retrieve it
@@ -184,12 +184,12 @@ class LobbyController extends Controller
         }])
             ->where('id', $subject_id)
             ->firstOrFail();
-   
+
         // Use question_num to get current question (1-based index -> 0-based array)
         $current_question_index = $lobby->question_num - 1;
-   
+
         $current_question = $questions->subjectsQuestions[0] ?? $questions->subjectsQuestions[0];
-   
+
         // Broadcast the current question
         broadcast(new QuizEvent('options-revealed', $current_question, $lobby->question_num, $id, $lobby->current_level));
 
@@ -257,6 +257,14 @@ class LobbyController extends Controller
 
         return 1;
     }
+    public function getNewLevel($id)
+    {
+        $lobby = Lobby::findOrFail($id);
+
+        return response()->json([
+            'level' => $lobby->levels_finished,
+        ], 200);
+    }
     public function nextquestion($id, $subject_id)
     {
         DB::transaction(function () use ($id, $subject_id) {
@@ -291,6 +299,10 @@ class LobbyController extends Controller
 
 
                 if ($current_question == null) {
+                    Lobby::where('id', $id)->update([
+                        'levels_finished' => $lobby->levels_finished . '-' . $lobby->current_level  . '-',
+                    ]);
+
                     broadcast(new QuizEvent('switch-new-level', null, null, $id, $lobby->current_level));
                 } else {
                     broadcast(new QuizEvent('', $current_question, $next, $id, $lobby->current_level));
@@ -361,7 +373,7 @@ class LobbyController extends Controller
         $lobby->lobby_code = $request->code;
 
         $lobby->save();
-         return redirect()->route('organizerLobby')
+        return redirect()->route('organizerLobby')
             ->with('success', 'Lobby Updated');
     }
 

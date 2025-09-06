@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
 
 const Questionnaire = () => {
 
-  const { id, team_id, subject_id, quiz_state, current_question, options_revealed, items, item_number, current_level } = usePage().props;
+  const { id, team_id, subject_id, quiz_state, current_question, options_revealed, items, item_number, current_level, levels_finished } = usePage().props;
   const { auth } = usePage<PageProps>().props;
 
   const [loading, setLoading] = useState(false)
@@ -37,7 +37,7 @@ const Questionnaire = () => {
   const [showLevelCard, setShowLevelCard] = useState(false)
   const [selectedLevel, setSelectedLevel] = useState(current_level);
   const [showLevelSelection, setShowLevelSelection] = useState(false)
-
+  const [finishedLevels, setFinishedLevels] = useState([])
   const levels = [
     {
       id: 'easy',
@@ -69,6 +69,15 @@ const Questionnaire = () => {
     setSelectedLevel(level);
     console.log('Selected level:', level);
   };
+
+  useEffect(() => {
+    if (!levels_finished || levels_finished !== "") {
+
+      const lf = (levels_finished as string).split("-")
+
+      setFinishedLevels(lf)
+    }
+  }, [levels_finished])
 
   useEffect(() => {
     const channel = window.Echo.channel('quiz-room_' + id);
@@ -656,6 +665,28 @@ const Questionnaire = () => {
 
   }, [selectedLevel])
 
+  const getNewLevel = async () => {
+    try {
+      const response = await axios.get(`/getLevel/${id}`)
+
+      console.log(response)
+
+      if (response.data.level) {
+        const lf = response.data.level.split("-")
+        setFinishedLevels(lf)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    if (state == "switch-new-level") {
+      getNewLevel()
+    }
+
+  }, [state, level])
+
   const restricted_state = ["timer-started", "options-revealed", "over-all-leaderboard", "finished", "answer-revealed", "leaderboard-revealed"]
   const e_state = ["timer-started", "options-revealed", "answer-revealed",]
   const myLevels = ["easy", "average", "difficult"]
@@ -684,7 +715,7 @@ const Questionnaire = () => {
                         {!auth?.user ? "Choosing Your" : "Choose Your"}
                       </h1>
                       <h2 className="text-orange-100 text-5xl font-black uppercase tracking-wider drop-shadow-2xl mt-2">
-                        Challenge Level {level}
+                        Challenge Level {level}    
                       </h2>
                       <div className="w-32 h-1 bg-gradient-to-r from-orange-200 to-orange-100 mx-auto mt-6 rounded-full"></div>
                     </div>
@@ -695,19 +726,30 @@ const Questionnaire = () => {
                         <button
                           key={level.id}
                           onClick={() => handleLevelSelect(level.id)}
+                          disabled={finishedLevels.includes(level.id)}
                           className={`
-                    ${level.color} ${level.hoverColor}
-                    text-white font-bold
-                    p-6 rounded-2xl
-                    transform transition-all duration-300 ease-out
-                    hover:scale-105 hover:shadow-2xl hover:-translate-y-1
-                    ${selectedLevel === level.id ? 'ring-4 ring-orange-200 ring-opacity-60 scale-105 shadow-2xl' : 'shadow-lg'}
-                    border border-white/20
-                    group relative overflow-hidden
-                  `}
+        ${level.color} ${level.hoverColor}
+        text-white font-bold
+        p-6 rounded-2xl
+        transform transition-all duration-300 ease-out
+        hover:scale-105 hover:shadow-2xl hover:-translate-y-1
+        ${selectedLevel === level.id ? 'ring-4 ring-orange-200 ring-opacity-60 scale-105 shadow-2xl' : 'shadow-lg'}
+        border border-white/20
+        group relative overflow-hidden
+        ${finishedLevels.includes(level.id) ? 'opacity-75 cursor-not-allowed' : ''}
+      `}
                         >
                           {/* Subtle shine effect */}
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+
+                          {/* Completion badge */}
+                          {finishedLevels.includes(level.id) && (
+                            <div className="absolute -top-2 -right-2 z-20">
+                              <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg border-2 border-white transform rotate-12 animate-pulse">
+                                ✓ DONE
+                              </div>
+                            </div>
+                          )}
 
                           <div className="flex items-center justify-between relative z-10">
                             <div className="flex items-center gap-4">
@@ -715,16 +757,35 @@ const Questionnaire = () => {
                               <div className="text-left">
                                 <div className="text-2xl font-black uppercase tracking-wide">
                                   {level.name}
+                                  {finishedLevels.includes(level.id) && (
+                                    <span className="ml-3 text-green-300 text-lg">
+                                      ✓
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="text-orange-100 text-sm font-medium opacity-90">
-                                  {level.description}
+                                  {finishedLevels.includes(level.id) ? (
+                                    <span className="text-green-200 font-semibold">
+                                      Completed! 🎉
+                                    </span>
+                                  ) : (
+                                    level.description
+                                  )}
                                 </div>
                               </div>
                             </div>
                             <div className="text-orange-200">
-                              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                              </svg>
+                              {finishedLevels.includes(level.id) ? (
+                                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                              ) : (
+                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
                             </div>
                           </div>
                         </button>
@@ -1191,10 +1252,10 @@ const Questionnaire = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-1/4 text-orange-700 font-semibold">Rank & Team</TableHead>
-       
+
                   {
-                     state == "finished" || state != "over-all-leaderboard" ?
-                    <TableHead className="w-1/2 text-orange-700 font-semibold">Previous Answer</TableHead> :""
+                    state == "finished" || state != "over-all-leaderboard" ?
+                      <TableHead className="w-1/2 text-orange-700 font-semibold">Previous Answer</TableHead> : ""
                   }
 
                   <TableHead className="w-1/2 text-orange-700 font-semibold">Total Points</TableHead>
@@ -1215,14 +1276,14 @@ const Questionnaire = () => {
                         </div>
                       </div>
                     </TableCell>
-         
+
                     {
-               state == "finished" ||state != "over-all-leaderboard" ?
-                      <TableCell>
-                        <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
-                          {rank.prev_answer || "--"}
-                        </div>
-                      </TableCell>:""
+                      state == "finished" || state != "over-all-leaderboard" ?
+                        <TableCell>
+                          <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
+                            {rank.prev_answer || "--"}
+                          </div>
+                        </TableCell> : ""
                     }
 
                     <TableCell>

@@ -132,7 +132,7 @@ export default function SubjectQuestionForm() {
         );
     };
 
-    const handleDeleteQuestion = async (question,elId) => {
+    const handleDeleteQuestion = async (question, elId) => {
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: `Delete ${question.question}? This cannot be undone!`,
@@ -146,21 +146,18 @@ export default function SubjectQuestionForm() {
 
         if (result.isConfirmed) {
             // Perform delete operation
-
             try {
-                const formData = { id: question.id }
-                const res = await axios.post('/question/delete', formData)
-
-                if (res.data == 1) {
-                    Swal.fire(
-                        'Deleted!',
-                        `${question.question} has been deleted.`,
-                        'success'
-                    ).then(() => {
-                        document.getElementById(elId).style.display = "none"
-                    });
-
-                }
+            
+                router.delete(route('question.delete'), {
+                    data: { id: question.id },
+                    onSuccess: () => {
+                        Swal.fire(
+                            'Deleted!',
+                            `${question.question} has been deleted.`,
+                            'success'
+                        )
+                    },
+                })
             } catch (error) {
                 console.log(error)
             }
@@ -204,7 +201,7 @@ export default function SubjectQuestionForm() {
                         {
                             easy_questions.length > 0 ?
                                 easy_questions?.map((q, index) =>
-                                    <TableRow key={`easy${q.id}` } id={`easy-${q.id}`}>
+                                    <TableRow key={`easy${q.id}`} id={`easy-${q.id}`}>
                                         <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
                                         <TableCell>{q.type}</TableCell>
                                         <TableCell>
@@ -234,7 +231,7 @@ export default function SubjectQuestionForm() {
                                         <TableCell>
                                             <div className="flex items-center justify-evenly space-x-2">
                                                 <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q,`easy-${q.id}`)} className="w-4 h-4 text-red-600" />
+                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q, `easy-${q.id}`)} className="w-4 h-4 text-red-600" />
                                                 </div>
                                                 <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
                                                     <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
@@ -299,7 +296,7 @@ export default function SubjectQuestionForm() {
                                         <TableCell>
                                             <div className="flex items-center justify-evenly space-x-2">
                                                 <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q,`average-${q.id}`)} className="w-4 h-4 text-red-600" />
+                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q, `average-${q.id}`)} className="w-4 h-4 text-red-600" />
                                                 </div>
                                                 <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
                                                     <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
@@ -364,7 +361,7 @@ export default function SubjectQuestionForm() {
                                         <TableCell>
                                             <div className="flex items-center justify-evenly space-x-2">
                                                 <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q,`hard-${q.id}`)} className="w-4 h-4 text-red-600" />
+                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q, `hard-${q.id}`)} className="w-4 h-4 text-red-600" />
                                                 </div>
                                                 <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
                                                     <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />

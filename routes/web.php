@@ -100,6 +100,8 @@ Route::get('/lobbyCategory/{id}', function ($lobbyCode) {
     ]);
 })->name('lobbyCategory');
 Route::get('/subjectQuestionForm/{subjectId}', function ($subjectId) {
+
+
     $questions = Subjects::with('subjectsQuestions')
         ->where('id', $subjectId)
         ->get();
@@ -209,7 +211,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/quizzes/{quiz}/starting', [QuizController::class, 'starting'])->name('quizzes.starting');
 });
 Route::post('/question/edit', [QuizController::class, 'updateQuestion'])->name('question.edit');
-Route::post('/question/delete', [QuizController::class, 'deleteQuestion'])->name('question.delete');
+Route::delete('/question/delete', [QuizController::class, 'deleteQuestion'])->name('question.delete');
 Route::get('/quizzes/{quiz}/live', function (App\Models\Quiz $quiz) {
     $quiz->load(['questions.options']);
     return Inertia::render('LiveQuizSession', ['quiz' => $quiz]);
@@ -322,7 +324,8 @@ Route::get('/questionnaire/{id}/{team_id}/{subject_id}', function ($id, $team_id
             'options_revealed' => $lobby->reveal_options,
             'items' =>  $items,
             'item_number' =>  $itemNumber,
-            'current_level' => $lobby->current_level
+            'current_level' => $lobby->current_level,
+            'levels_finished' => $lobby->levels_finished
 
         ]
     );
@@ -335,6 +338,7 @@ Route::get('/lobby-startTimer/{id}/{subject_id}', [LobbyController::class, 'star
 Route::get('/showOverAllLeaderBoard/{id}/{subject_id}', [LobbyController::class, 'showOverAllLeaderBoard'])->name('showOverAllLeaderBoard');
 Route::get('/lobby-gameLevel/{id}/{level}/{subject_id}', [LobbyController::class, 'gameLevel'])->name('lobby-gameLevel');
 Route::get('/lobby-changeState/{id}/{level}/{subject_id}', [LobbyController::class, 'changeState'])->name('lobby-changeState');
+Route::get('/getLevel/{id}', [LobbyController::class, 'getNewLevel'])->name('getLevel');
 
 Route::get('/lobby-revealAnswer/{id}/{subject_id}', [LobbyController::class, 'revealAnswer'])->name('lobby-revealAnswer');
 Route::get('/lobby-nextquestion/{id}/{subject_id}', [LobbyController::class, 'nextquestion'])->name('lobby-nextquestion');
@@ -344,6 +348,7 @@ Route::post('/lobby/{id}', [LobbyController::class, 'update'])->name('lobby.upda
 Route::post('/lobby/{id}/delete', [LobbyController::class, 'destroy'])->name('lobby.destroy');
 
 Route::get('/close-event/{id}/{subject_id}', [QuizEventController::class, 'closeEvent'])->name('close-event');
+
 
 Route::post('/subject', [SubjectController::class, 'store'])->name('subject.store');
 

@@ -27,7 +27,8 @@ class QuizEventController extends Controller
             'reveal_leaderboard' => 0,
             'reveal_options' => 0,
             'question_num' => 1,
-            'current_level' => ''
+            'current_level' => '',
+            'levels_finished' =>''
         ]);
 
 

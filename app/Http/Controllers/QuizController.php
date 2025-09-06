@@ -9,6 +9,7 @@ use App\Models\Option;
 use App\Models\LiveSession; // Import the LiveSession model
 use App\Models\LiveParticipant; // Import the LiveParticipant model
 use App\Models\SubjectQuestion;
+use App\Models\Subjects;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -219,7 +220,16 @@ class QuizController extends Controller
         try {
             // Start database transaction
 
-            SubjectQuestion::where('id', $request->id)->delete();
+            // SubjectQuestion::where('id', $request->id)->delete();
+            $subjectQuestion = SubjectQuestion::find($request->id);
+
+            if ($subjectQuestion) {
+                $subjectId = $subjectQuestion->subject_id;
+
+                $subjectQuestion->delete();
+
+        return redirect()->route('subjectQuestionForm', ['subjectId' => $subjectId]);
+            }
 
             return 1;
         } catch (Exception $e) {
@@ -243,7 +253,7 @@ class QuizController extends Controller
 
             // Find the quiz question
             $quizQuestion = SubjectQuestion::findOrFail($request->id);
-              
+
 
             $updateData = [
                 'question'   => $request->question,
