@@ -551,6 +551,7 @@ const Questionnaire = () => {
     try {
       const res = await axios.get(`/lobby-gameLevel/${id}/${selectedLevel}/${subject_id}`)
       if (res.data) {
+    
         setShowLevelSelection(false)
         setTimeout(() => {
 
@@ -558,6 +559,22 @@ const Questionnaire = () => {
         }, 3000);
       }
     } catch (error) {
+          if (error.response.data.status == "error") {
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: error.response.data.message,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            background: '#fff',
+            color: '#dc3545',
+            iconColor: '#dc3545',
+          });
+          return
+        }
       console.log(error)
     }
   }
@@ -715,7 +732,7 @@ const Questionnaire = () => {
                         {!auth?.user ? "Choosing Your" : "Choose Your"}
                       </h1>
                       <h2 className="text-orange-100 text-5xl font-black uppercase tracking-wider drop-shadow-2xl mt-2">
-                        Challenge Level {level}    
+                        Challenge Level {level}
                       </h2>
                       <div className="w-32 h-1 bg-gradient-to-r from-orange-200 to-orange-100 mx-auto mt-6 rounded-full"></div>
                     </div>

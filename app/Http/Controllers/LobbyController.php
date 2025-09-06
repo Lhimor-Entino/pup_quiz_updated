@@ -133,6 +133,12 @@ class LobbyController extends Controller
         $current_question_index = $lobby->question_num - 1;
         $current_question = $questions->subjectsQuestions[0] ?? null;
 
+        if($current_question == null){
+            return response()->json([
+                "status" => 'error',
+                "message" => 'No Question Available'
+            ],404);
+        }
         //  dd($current_question);
         broadcast(new QuizEvent('level-changes', $current_question, $lobby->question_num, $id, $level));
 
