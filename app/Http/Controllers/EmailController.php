@@ -95,13 +95,16 @@ class EmailController extends Controller
 
     public function sendOtp(Request $request)
     {
-
+          $lOtp = LoginOtp::where('email', $request->email)->firstOrFail();
         $user = User::where("email", $request->email)->first();
 
         if (!$user) {
             return response()->json([
                 "msg" => "Email not found"
             ], 404);
+        }
+         if ($lOtp) {
+            $lOtp->delete();
         }
 
         if (!Hash::check($request->password, $user->password)) {
