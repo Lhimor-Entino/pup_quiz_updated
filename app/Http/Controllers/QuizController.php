@@ -8,6 +8,7 @@ use App\Models\QuizAttempt;
 use App\Models\Option;
 use App\Models\LiveSession; // Import the LiveSession model
 use App\Models\LiveParticipant; // Import the LiveParticipant model
+use App\Models\QuizManagement;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
 use Exception;
@@ -226,9 +227,18 @@ class QuizController extends Controller
             if ($subjectQuestion) {
                 $subjectId = $subjectQuestion->subject_id;
 
-                $subjectQuestion->delete();
+                // $subjectQuestion->delete();
+                QuizManagement::create([
+                    "user_id" => Auth::id(),
+                    "quiz_id" => $subjectQuestion->id,
+                    "action" => 2
+                ]);
 
-        return redirect()->route('subjectQuestionForm', ['subjectId' => $subjectId]);
+
+                $subjectQuestion->deleted = 1;
+                $subjectQuestion->save();
+
+                return redirect()->route('subjectQuestionForm', ['subjectId' => $subjectId]);
             }
 
             return 1;
@@ -277,6 +287,11 @@ class QuizController extends Controller
             }
 
             $quizQuestion->update($updateData);
+            QuizManagement::create([
+                "user_id" => Auth::id(),
+                "quiz_id" => $quizQuestion->id,
+                "action" => 1
+            ]);
             // Commit the transaction
             DB::commit();
             return 1;
@@ -418,7 +433,7 @@ class QuizController extends Controller
                     'true_false_answer' => $questionData['type'] === 'true-false' ? ($questionData['trueFalseAnswer'] ?? null) : null,
                     'short_answer' => $questionData['type'] === 'short-answer' ? ($questionData['shortAnswer'] ?? null) : null,
                 ]);
-
+       
                 if ($questionData['type'] === 'multiple-choice' && !empty($questionData['options'])) {
                     foreach ($questionData['options'] as $optionData) {
                         $question->options()->create([

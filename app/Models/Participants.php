@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Participants extends Model
 {
     //
+   
     protected $fillable = [
         'team',
         'members',
@@ -17,4 +18,8 @@ class Participants extends Model
         'prev_answer_correct',
 
     ];
+
+    public function logs(){
+        return $this->hasMany(LeaderboardLog::class,'participant_id','id');
+    }
 }

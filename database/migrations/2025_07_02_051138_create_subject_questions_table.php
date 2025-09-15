@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string("points");
             $table->unsignedBigInteger('subject_id');
             $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-             $table->string('trueFalseAnswer')->nullable();
-              $table->string('shortAnswer')->nullable();
+            $table->string('trueFalseAnswer')->nullable();
+            $table->string('shortAnswer')->nullable();
             $table->timestamps();
         });
     }

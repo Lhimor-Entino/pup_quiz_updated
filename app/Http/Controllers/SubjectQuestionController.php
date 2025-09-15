@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\QuizManagement;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class SubjectQuestionController extends Controller
@@ -66,7 +68,7 @@ class SubjectQuestionController extends Controller
         foreach ($question_data as $question) {
 
 
-            SubjectQuestion::create([
+            $question =   SubjectQuestion::create([
                 'question' => $question->question,
                 "difficulty" => $question->difficulty,
                 "answer" => '', // not used 
@@ -78,6 +80,12 @@ class SubjectQuestionController extends Controller
                 "subject_id" => $question->subject_id,
                 'trueFalseAnswer' => $question->trueFalseAnswer,
                 'shortAnswer' => $question->shortAnswer,
+            ]);
+
+            QuizManagement::create([
+                "user_id" => Auth::id(),
+                "quiz_id" => $question->id,
+                "action" => 0
             ]);
         }
 

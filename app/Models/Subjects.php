@@ -22,6 +22,6 @@ class Subjects extends Model
 
     public function subjectsQuestions()
     {
-        return $this->hasMany(SubjectQuestion::class,"subject_id")->orderBy("id", "asc");
+        return $this->hasMany(SubjectQuestion::class,"subject_id")->where("deleted",0)->orderBy("id", "asc");
     }
 }

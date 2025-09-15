@@ -5,11 +5,12 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
 import Footer from '@/CustomComponents/Footer';
+import OTPModal from '@/CustomComponents/OtpModal';
 import GuestLayout from '@/Layouts/GuestLayout';
 
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Home } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
@@ -25,12 +26,13 @@ export default function Login({
         password: '',
         remember: false as boolean,
     });
-
+    const [openOTPModal,setOpenOTPModal] = useState(false)
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post(route('login'), {
+        post(route('otp-login'), {
             onFinish: () => reset('password'),
+            onSuccess: () => {setOpenOTPModal(true); localStorage.setItem("email",data.email)},
             onError: () => {
                 Swal.fire({
                     toast: true,
@@ -52,6 +54,7 @@ export default function Login({
         <GuestLayout>
             <Head title="Log in" />
 
+            <OTPModal isOpen={openOTPModal} setIsOpen={setOpenOTPModal}  />
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
                     {status}

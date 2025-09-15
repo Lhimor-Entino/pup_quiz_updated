@@ -19,4 +19,9 @@ class Lobby extends Model
     {
         return $this->hasMany(Subjects::class);
     }
+
+    public function lobbyMngnt()
+    {
+        return $this->hasMany(LoobyManagement::class);
+    }
 }

@@ -3,20 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Events\QuizEvent;
+use App\Models\LeaderboardLog;
 use App\Models\Lobby;
 use App\Models\Participants;
 use App\Models\PointsHistory;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class QuizEventController extends Controller
 {
     //
 
 
-    public function closeEvent($id,$subject_id)
+    public function closeEvent(Request $request, $id, $subject_id)
     {
+
+        $data = json_decode($request->leaderboard, true);
+
+        $place = 1;
+        foreach ($data as $item) {
+            LeaderboardLog::create([
+                'user_id' => Auth::id(),
+                'participant_id' => $item['id'],
+                'total_score'   => $item['score'],
+                'place'       =>  $place,
+                'subject_id'  => $item['subject_id'],
+            ]);
+            $place++;
+        }
 
         Lobby::where('id', $id)->update([
             'reveal_answer' => 0,
@@ -28,17 +44,17 @@ class QuizEventController extends Controller
             'reveal_options' => 0,
             'question_num' => 1,
             'current_level' => '',
-            'levels_finished' =>''
+            'levels_finished' => ''
         ]);
 
 
         $lobby = Lobby::find($id);
 
         $subject = Subjects::where("lobby_id", $lobby->id)->first();
-     
+
         if ($subject) {
-            
-            SubjectQuestion::where('subject_id',$subject_id)->update([
+
+            SubjectQuestion::where('subject_id', $subject_id)->update([
                 'archive' => 0
             ]);
         }

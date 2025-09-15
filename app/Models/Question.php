@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Question extends Model
 {
     use HasFactory;
-   protected $connection = 'sqlite';
+    protected $connection = 'sqlite';
     /**
      * The attributes that are mass assignable.
      *
@@ -51,7 +51,9 @@ class Question extends Model
     {
         return $this->hasMany(Option::class);
     }
-    public function points_history(): HasMany{
+    public function points_history(): HasMany
+    {
         return $this->hasMany(PointsHistory::class);
     }
+ 
 }

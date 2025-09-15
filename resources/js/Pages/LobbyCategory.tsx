@@ -41,7 +41,9 @@ export default function LobbyCategory() {
       <Head title="Event Rooms Category" />
 
       <div className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 min-h-screen">
-        <h1 className="text-3xl font-bold text-orange-800 mb-8 tracking-tight">All Lobbies with Code </h1>
+        <h1 className="text-3xl font-bold text-orange-800 mb-8 tracking-tight">All Lobbies with Code  </h1>
+      
+      
 
         {lobbies?.map((lobby) => (
           <div key={lobby.id} className="mb-8 bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg transition duration-300 hover:shadow-xl">

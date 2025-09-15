@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubjectQuestion extends Model
 {
@@ -24,5 +25,9 @@ class SubjectQuestion extends Model
     public function subject()
     {
         return $this->belongsTo(Subjects::class);
+    }
+       public function logs(): HasMany
+    {
+         return $this->hasMany(QuizManagement::class, 'quiz_id', 'id');
     }
 }

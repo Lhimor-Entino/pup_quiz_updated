@@ -102,8 +102,6 @@ class ParticipantController extends Controller
             ->orderBy('score', 'desc')
             ->orderBy('created_at', 'asc') // if scores are tied, earlier entry comes first
             ->get();
-
-            
     }
     // public function currentQuestionLeaderboard($id, $question_id)
     // {
@@ -160,11 +158,13 @@ class ParticipantController extends Controller
 
         return $history;
     }
-    public function teams($id)
+    public function teams($id, $subject_id)
     {
         $lobby =  Lobby::where("id", $id)->first();
 
-        $teams = Participants::where("lobby_code", $lobby->lobby_code)->get();
+        $teams = Participants::where("lobby_code", $lobby->lobby_code)
+            ->where("subject_id", $subject_id)
+            ->get();
         return $teams;
     }
     public function store(Request $request)
@@ -197,7 +197,7 @@ class ParticipantController extends Controller
     }
 
 
-    public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id,$q_type)
+    public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id, $q_type)
     {
 
 
@@ -209,8 +209,8 @@ class ParticipantController extends Controller
         $prev_ans = $ans;
         // 3. Update the score
 
-        
-        if ($score >= 0 && $q_type !=="short-answer") {
+
+        if ($score >= 0 && $q_type !== "short-answer") {
             $participant->score = $newScore;
         }
 

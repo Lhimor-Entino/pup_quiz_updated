@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\QuizEvent;
 use App\Models\Lobby;
+use App\Models\LoobyManagement;
 use App\Models\Subjects;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -86,7 +87,7 @@ class LobbyController extends Controller
     }
     public function getLobby()
     {
-        $lobbies = Lobby::all();
+        $lobbies = Lobby::where("archive",0)->get();
 
         return $lobbies;
     }
@@ -95,7 +96,7 @@ class LobbyController extends Controller
     {
 
 
-        return Lobby::where('user_id', Auth::user()->id)->get();
+        return Lobby::where('user_id', Auth::user()->id)->where("archive", 0)->get();
     }
     public function lobbyStatus($id)
     {
@@ -133,11 +134,11 @@ class LobbyController extends Controller
         $current_question_index = $lobby->question_num - 1;
         $current_question = $questions->subjectsQuestions[0] ?? null;
 
-        if($current_question == null){
+        if ($current_question == null) {
             return response()->json([
                 "status" => 'error',
                 "message" => 'No Question Available'
-            ],404);
+            ], 404);
         }
         //  dd($current_question);
         broadcast(new QuizEvent('level-changes', $current_question, $lobby->question_num, $id, $level));
@@ -345,8 +346,15 @@ class LobbyController extends Controller
             'lobby_code' => $request->input('code'),
             'user_id' => Auth::user()->id
         ]);
+
+        LoobyManagement::create([
+            "user_id" => Auth::id(),
+            "lobby_id" => $lobby->id,
+            "action" => 0
+        ]);
+
         return Inertia::render('OrganizerLobby', [
-            'lobby' => Lobby::where("user_id", Auth::user()->id)->get()
+            'lobby' => Lobby::where("user_id", Auth::user()->id)->where("archive",0)->get()
         ]);
     }
 
@@ -379,6 +387,12 @@ class LobbyController extends Controller
         $lobby->lobby_code = $request->code;
 
         $lobby->save();
+
+        LoobyManagement::create([
+            "user_id" => Auth::id(),
+            "lobby_id" => $lobby->id,
+            "action" => 1
+        ]);
         return redirect()->route('organizerLobby')
             ->with('success', 'Lobby Updated');
     }
@@ -389,11 +403,23 @@ class LobbyController extends Controller
     public function destroy(string $id)
     {
 
-        $lobby = Lobby::findOrFail($id);
-        $lobby->delete();
 
-        return redirect()->route('organizerLobby')
-            ->with('success', 'Lobby deleted successfully');
+        $lobby = Lobby::findOrFail($id);
+        LoobyManagement::create([
+            "user_id" => Auth::id(),
+            "lobby_id" => $lobby->id,
+            "action" => 2
+        ]);
+
+
+        $lobby->archive = 1;
+        $lobby->save();
+
+        // return redirect()->route('organizerLobby')
+        //     ->with('success', 'Lobby deleted successfully');
+        return Inertia::render('OrganizerLobby', [
+            'lobby' => Lobby::where("user_id", Auth::user()->id)->where("archive",0)->get()
+        ]);
         //
     }
 }

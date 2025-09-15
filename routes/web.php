@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\QuizEvent;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -15,15 +16,20 @@ use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\QuizEventController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SessionLogsController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SubjectQuestionController;
+use App\Models\LeaderboardLog;
 use App\Models\Lobby;
+use App\Models\LoobyManagement;
 use App\Models\Participants;
+use App\Models\QuizManagement;
+use App\Models\SessionLogs;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Http\Request;
 //Registration Controller Routes
 Route::post('/register-student', [StudentRegistrationController::class, 'register']);
 Route::post('/register-member', [MemberRegistrationController::class, 'register']);
@@ -40,8 +46,28 @@ Route::get('/login', function () {
     ]);
 });
 
+
+Route::post('/otp-login', [EmailController::class,'sendOtp'])->name("otp-login");
+Route::post('/resendOTP', [EmailController::class,'resendOTP']);
+Route::post('/verifyOtp', [EmailController::class,'verifyOtp'])->name("verifyOtp");
 //Views Routes
-Route::get('/dashboard', function () {
+Route::get('/dashboard', function (Request $request) {
+
+    // dd(Auth::id());
+
+    if (Auth::id()) {
+        try {
+            SessionLogs::create([
+                'user_id'    => Auth::id(),
+                'ip_address' => $request->ip(),
+            ]);
+        } catch (\Throwable $e) {
+            // Log the error for debugging
+
+            // Optionally show it immediately (for local debugging only)
+            dd($e->getMessage());
+        }
+    }
 
 
     if (Auth::user()->role == 3) {
@@ -53,7 +79,76 @@ Route::get('/dashboard', function () {
 Route::get('/explore', function () {
     return Inertia::render('Explore');
 })->middleware(['auth', 'verified'])->name('explore');
+
+Route::get('/session-history', function () {
+
+    $logs =  SessionLogs::where("user_id", Auth::id())->get();
+
+    return Inertia::render('SessionHistory', [
+        "logs" => $logs
+    ]);
+})->middleware(['auth', 'verified'])->name('session-history');
+Route::get('/lobby-management', function () {
+
+    $logs =  LoobyManagement::with('lobby')->where("user_id", Auth::id())->get();
+
+    return Inertia::render('LobbyManagement', [
+        "logs" => $logs
+    ]);
+})->middleware(['auth', 'verified'])->name('lobby-management');
+Route::get('/participant-management', function () {
+    return Inertia::render('ParticipantManagement');
+})->middleware(['auth', 'verified'])->name('participant-management');
+Route::get('/quiz-management', function () {
+    $logs =  QuizManagement::with('question')->where("user_id", Auth::id())->get();
+
+    return Inertia::render('QuizManagement', [
+        "logs" => $logs
+    ]);
+})->middleware(['auth', 'verified'])->name('quiz-management');
+
+Route::get('/getLobbyCategory', function () {
+
+    $lobbies = Lobby::with('subjects')->where("user_id", Auth::id())->get();
+
+    // $lobbies = Lobby::with('subjects')
+    //     ->where('lobby_code', $lobbyCode)
+    //     ->where('archive', 0)
+    //     ->get();
+
+    // // $controller = app(QuizEventController::class);
+    // // $state = $controller->closeEvent($lobbies[0]->id,0);
+    return response()->json(
+        [
+            "lobbies" => $lobbies
+        ]
+
+    );
+})->name('getLobbyCategory');
+
+Route::get('/getLobbySubjects/{lobby_id}', function ($lobby_id) {
+
+    $subjects = Subjects::where('lobby_id', $lobby_id)
+        ->where('archive', 0)
+        ->get();
+    return response()->json(
+        [
+            "subjects" => $subjects
+        ]
+
+    );
+})->name('getLobbySubjects');
+
+
+Route::get('/scoring', function () {
+    $logs =  LeaderboardLog::with('participant')->where("user_id", Auth::id())->get();
+    return Inertia::render('Scoring', [
+        "logs" => $logs
+    ]);
+})->middleware(['auth', 'verified'])->name('scoring');
+
 Route::get('/', function () {
+
     return Inertia::render('Home');
 })->name('home');
 Route::get('/teacher', function () {
@@ -87,9 +182,10 @@ Route::get('/organizerLobby', function () {
 })->middleware(['auth', 'verified'])->name('organizerLobby');
 Route::get('/lobbyCategory/{id}', function ($lobbyCode) {
 
-    
+
     $lobbies = Lobby::with('subjects')
         ->where('lobby_code', $lobbyCode)
+        ->where('archive', 0)
         ->get();
 
     // $controller = app(QuizEventController::class);
@@ -99,6 +195,9 @@ Route::get('/lobbyCategory/{id}', function ($lobbyCode) {
         'id' =>   $lobbies[0]->id
     ]);
 })->name('lobbyCategory');
+
+
+
 Route::get('/subjectQuestionForm/{subjectId}', function ($subjectId) {
 
 
@@ -225,9 +324,19 @@ Route::post('/participant/verify-team', [ParticipantController::class, 'verify']
 Route::get('/lobby/{id}/{subject_id}/{team_id?}', function ($id, $subject_id, $team_id = 'organizer') {
     $subject = Subjects::findOrFail($subject_id);
 
+    if ($team_id != "organizer") {
+
+        $team = Participants::findOrFail($team_id);
+        $team->subject_id = $subject_id;
+        $team->save();
+    }
 
 
-    $lobby = Lobby::findOrFail($id);
+    // $lobby = Lobby::findOrFail($id);
+    $lobby = Lobby::where("id", $id)
+        ->where("archive", 0)
+        ->firstOrFail();
+
     $current_question = $lobby->question_num;
 
     if ($lobby->started == 1) {
@@ -254,7 +363,11 @@ Route::get('/lobby/{id}/{subject_id}/{team_id?}', function ($id, $subject_id, $t
 
 Route::get('/questionnaire/{id}/{team_id}/{subject_id}', function ($id, $team_id, $subject_id) {
 
-    $lobby = Lobby::findOrFail($id);
+    // $lobby = Lobby::findOrFail($id);
+    $lobby = Lobby::where("id", $id)
+        ->where("archive", 0)
+        ->firstOrFail();
+
     $state = null;
 
     $all_questions = Subjects::with(['subjectsQuestions'])
@@ -347,12 +460,12 @@ Route::post('/lobby', [LobbyController::class, 'store'])->name('lobby.store');
 Route::post('/lobby/{id}', [LobbyController::class, 'update'])->name('lobby.update');
 Route::post('/lobby/{id}/delete', [LobbyController::class, 'destroy'])->name('lobby.destroy');
 
-Route::get('/close-event/{id}/{subject_id}', [QuizEventController::class, 'closeEvent'])->name('close-event');
+Route::post('/close-event/{id}/{subject_id}', [QuizEventController::class, 'closeEvent'])->name('close-event');
 
 
 Route::post('/subject', [SubjectController::class, 'store'])->name('subject.store');
 
-Route::get('/teams/{id}', [ParticipantController::class, 'teams'])->name('teams');
+Route::get('/teams/{id}/{subject_id}', [ParticipantController::class, 'teams'])->name('teams');
 Route::get('/check-lobby-code/{code}', [LobbyController::class, 'checkCode'])->name('check-lobby-code');
 
 Route::get('/organizer-lobbies', [LobbyController::class, 'getOrganizerLobby'])->name('organizer-lobbies');
@@ -367,6 +480,7 @@ Route::get('/participant-shor-answer/{id}', [ParticipantController::class, 'shor
 Route::post('/participant-answer-update', [ParticipantController::class, 'updateAns'])->name('participant-shor-answer');
 
 Route::get('/report/teams/excel', [ReportController::class, 'downloadTeamsReport']);
+
 
 
 Route::prefix('api/live-quizzes/{quiz}')->middleware('auth:sanctum')->group(function () {

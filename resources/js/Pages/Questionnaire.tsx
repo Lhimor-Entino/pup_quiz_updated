@@ -347,9 +347,14 @@ const Questionnaire = () => {
   }
 
   const handleCloseEvent = async () => {
+
+    console.log("Leaderboard",leaderboard)
+    // return;
     setLoading(true)
     try {
-      const response = await axios.get(`/close-event/${id}/${subject_id}`)
+      const formData = new FormData()
+      formData.append("leaderboard",JSON.stringify(leaderboard))
+      const response = await axios.post(`/close-event/${id}/${subject_id}`,formData)
 
       if (response.data.status == 200) {
         Swal.fire({
@@ -1073,7 +1078,7 @@ const Questionnaire = () => {
               <div className="text-center mb-6">
                 <div className='flex justify-center items-center mb-4'>
                   <div className="bg-orange-500 text-white text-[3rem] font-bold rounded-full w-16 h-16 flex items-center justify-center shadow-md">
-                    {seconds}
+                    {seconds} 
                   </div>
                 </div>
 
@@ -1306,8 +1311,11 @@ const Questionnaire = () => {
                     <TableCell>
 
                       <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
-                        {state != "over-all-leaderboard" ? currentQuestion ? currentQuestion['points'] : "" : rank.score <= 0 ? 0 : rank.score}
-
+                        {
+                          rank.prev_answer_correct == 1 ?
+                          state != "over-all-leaderboard" ? currentQuestion ? currentQuestion['points'] : "" : rank.score <= 0 ? 0 : rank.score : 
+                          state != "over-all-leaderboard" ? 0 : rank.score
+                        }
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
