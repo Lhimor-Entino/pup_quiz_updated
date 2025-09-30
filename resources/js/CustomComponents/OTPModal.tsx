@@ -220,7 +220,7 @@ export default function OTPModal(props: Props) {
                                     </div>
                                 </div>
 
-                                <DialogTitle>Verify Your Phone</DialogTitle>
+                                <DialogTitle>Verify Your Email</DialogTitle>
                                 <DialogDescription>
                                     Enter the 6-digit verification code sent to your email address ending in <span className="font-semibold text-gray-900">{localStorage.getItem("email")}</span>
                                 </DialogDescription>

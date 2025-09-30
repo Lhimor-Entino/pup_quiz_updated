@@ -5,6 +5,8 @@ import { Label } from '@/Components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import LeaderBoardIcon from '@/CustomComponents/LeaderBoardIcon';
+import LeaderboardModal from '@/CustomComponents/LeaderBoardModal';
 import LoadingText from '@/CustomComponents/Loader';
 import { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
@@ -64,6 +66,67 @@ const Questionnaire = () => {
       icon: '⚡'
     }
   ];
+
+  const enterFullscreen = () => {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    // First gesture (click/tap) triggers fullscreen
+    const handleFirstClick = () => {
+      enterFullscreen();
+      document.removeEventListener("click", handleFirstClick);
+    };
+    document.addEventListener("click", handleFirstClick);
+
+    // If user exits fullscreen (Esc, F11, resize) → force back
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        enterFullscreen();
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    // Extra check on resize
+    const handleResize = () => {
+      if (!document.fullscreenElement) {
+        enterFullscreen();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      document.removeEventListener("click", handleFirstClick);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      console.log("Current active element:", document.activeElement);
+      if (e.key === "F11") {
+        e.preventDefault(); // Stop fullscreen toggle
+        e.stopPropagation();
+        document.body.focus();
+        // alert("F11 is disabled!");
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();  // stop default action
+        e.stopPropagation(); // stop bubbling
+        document.body.focus();
+        alert("Escape is disabled!");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
 
   const handleLevelSelect = (level) => {
     setSelectedLevel(level);
@@ -348,13 +411,13 @@ const Questionnaire = () => {
 
   const handleCloseEvent = async () => {
 
-    console.log("Leaderboard",leaderboard)
+    console.log("Leaderboard", leaderboard)
     // return;
     setLoading(true)
     try {
       const formData = new FormData()
-      formData.append("leaderboard",JSON.stringify(leaderboard))
-      const response = await axios.post(`/close-event/${id}/${subject_id}`,formData)
+      formData.append("leaderboard", JSON.stringify(leaderboard))
+      const response = await axios.post(`/close-event/${id}/${subject_id}`, formData)
 
       if (response.data.status == 200) {
         Swal.fire({
@@ -379,7 +442,7 @@ const Questionnaire = () => {
 
   const getLeaderboard = async () => {
     try {
-      const response = await axios.get(`/leaderboard/${id}`)
+      const response = await axios.get(`/leaderboard/${id}/${subject_id}`)
 
       setLeaderboard(response.data)
     } catch (error) {
@@ -556,7 +619,7 @@ const Questionnaire = () => {
     try {
       const res = await axios.get(`/lobby-gameLevel/${id}/${selectedLevel}/${subject_id}`)
       if (res.data) {
-    
+
         setShowLevelSelection(false)
         setTimeout(() => {
 
@@ -564,22 +627,22 @@ const Questionnaire = () => {
         }, 3000);
       }
     } catch (error) {
-          if (error.response.data.status == "error") {
+      if (error.response.data.status == "error") {
 
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'error',
-            title: error.response.data.message,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            background: '#fff',
-            color: '#dc3545',
-            iconColor: '#dc3545',
-          });
-          return
-        }
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: '#fff',
+          color: '#dc3545',
+          iconColor: '#dc3545',
+        });
+        return
+      }
       console.log(error)
     }
   }
@@ -708,13 +771,14 @@ const Questionnaire = () => {
     }
 
   }, [state, level])
+const [isModalOpen, setIsModalOpen] = useState(false);
 
   const restricted_state = ["timer-started", "options-revealed", "over-all-leaderboard", "finished", "answer-revealed", "leaderboard-revealed"]
   const e_state = ["timer-started", "options-revealed", "answer-revealed",]
   const myLevels = ["easy", "average", "difficult"]
   return (
-    <div className="min-h-screen bg-yellow-200 pt-8">
-      <div className="max-w-4xl mx-auto space-y-8 p-8">
+    <div className="min-h-screen bg-yellow-200 pt-8 flex justify-center items-start">
+      <div className="w-[80%] flex flex-col justify-center items-end gap-y-10">
 
         {/* {JSON.stringify(selectedLevel)}
       {JSON.stringify(showLevelSelection)}
@@ -820,7 +884,7 @@ const Questionnaire = () => {
                         onClick={() => handleSaveGameLevel()}
                         className="bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-orange-900 font-black text-xl py-4 px-12 rounded-full transform transition-all duration-300 hover:scale-110 shadow-2xl hover:shadow-orange-400/50 border-2 border-yellow-300 uppercase tracking-wider"
                       >
-                        🚀 Start Quiz
+                        🚀 Proceed to Quiz
                       </button>
                     ) : ""}
 
@@ -855,6 +919,15 @@ const Questionnaire = () => {
           </div> : ""
         }
 
+        {/* // MODAL LEADERBOARD */}
+        <LeaderboardModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        leaderboard={leaderboard}
+        team_id={1}
+        state="over-all-leaderboard"
+        currentQuestion={{ points: 10 }}
+      />
 
 
         {/* // SHORT ANSWER  MODAL FOR ORGANIZER */}
@@ -996,20 +1069,28 @@ const Questionnaire = () => {
           </Dialog>
         }
 
+        {
+          auth?.user &&
+          <div  onClick={() => setIsModalOpen(true)}>
+            <LeaderBoardIcon />
+          </div>
+
+
+        }
 
 
         {
           <div className='flex gap-x-2 justify-end'>
             {
               state == "timer-started" && auth?.user ?
-                <Button disabled={seconds != 0 || loading} className='bg-orange-600' onClick={() => handleRevealAnswer()}>
+                <Button disabled={seconds != 0 || loading} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleRevealAnswer()}>
                   <LoadingText loading={loading} text="Revealing answer please wait..." normal_text='Reveal Answer' />
                 </Button> : ""
 
             }
             {
               state == 'answer-revealed' && auth?.user ?
-                <Button disabled={loading} className='bg-orange-600' onClick={() => handleRevealLeaderboard()}>
+                <Button disabled={loading} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleRevealLeaderboard()}>
                   <LoadingText loading={loading} text="Revealing leaderboard please wait..." normal_text='Reveal Leaderboard' />
                 </Button> : ""
             }
@@ -1020,7 +1101,7 @@ const Questionnaire = () => {
             <div className='flex gap-x-2 justify-end'>
               {
                 state == "options-revealed" &&
-                <Button className='bg-orange-600' disabled={loading} onClick={() => handleStartTimer()}>
+                <Button className='bg-orange-600 text-3xl px-14 h-20' disabled={loading} onClick={() => handleStartTimer()}>
                   <LoadingText loading={loading} text="Timer Starting wait..." normal_text=' Start Timer' />
                 </Button>
               }
@@ -1033,12 +1114,12 @@ const Questionnaire = () => {
         {
           auth?.user && state == "leaderboard-revealed" && itemNumber != items || auth?.user && state == "over-all-leaderboard" && itemNumber != items ?
             <div className='flex gap-x-2 justify-end'>
-              <Button disabled={loading} className='bg-orange-600' onClick={() => handleNextQuestion()}>
+              <Button disabled={loading} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleNextQuestion()}>
 
                 <LoadingText loading={loading} text="Loading next question please wait..." normal_text='Next Question' />
               </Button>
 
-              <Button disabled={loading2} className='bg-orange-600' onClick={() => handleShowOverAllLeaderBoard()}>
+              <Button disabled={loading2} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleShowOverAllLeaderBoard()}>
 
                 <LoadingText loading={loading2} text="Loading  please wait..." normal_text='Over All Leaderboard' />
               </Button>
@@ -1049,10 +1130,10 @@ const Questionnaire = () => {
         {
           auth?.user && state == "finished" || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
             <div className='flex gap-x-2 justify-end'>
-              <Button disabled={loading} className='bg-orange-600' onClick={() => handleCloseEvent()}>
+              <Button disabled={loading} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleCloseEvent()}>
                 <LoadingText loading={loading} text="Loading next question please wait..." normal_text='Send All to lobby' />
               </Button>
-              <Button disabled={loading2} className='bg-orange-600' onClick={() => handleShowOverAllLeaderBoard()}>
+              <Button disabled={loading2} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleShowOverAllLeaderBoard()}>
 
                 <LoadingText loading={loading2} text="Loading  please wait..." normal_text='Over All Leaderboard' />
               </Button>
@@ -1062,7 +1143,7 @@ const Questionnaire = () => {
 
         {
           auth?.user && state == "general" || auth?.user && state == "" ? <div className='text-right'>
-            <Button className='bg-orange-600' disabled={loading} onClick={() => handleRevealOptions()}>
+            <Button className='bg-orange-600 text-3xl px-14 h-20' disabled={loading} onClick={() => handleRevealOptions()}>
 
               <LoadingText loading={loading} text="Revealing please wait..." normal_text='Reveal Options' />
 
@@ -1073,16 +1154,16 @@ const Questionnaire = () => {
         {/* Question Display */}
         {
           state != "leaderboard-revealed" && state != "over-all-leaderboard" && state != "finished" ?
-            <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl shadow-lg p-8 border border-orange-100">
+            <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl shadow-lg p-8 border border-orange-100 w-full">
 
               <div className="text-center mb-6">
                 <div className='flex justify-center items-center mb-4'>
-                  <div className="bg-orange-500 text-white text-[3rem] font-bold rounded-full w-16 h-16 flex items-center justify-center shadow-md">
-                    {seconds} 
+                  <div className="bg-orange-500 text-white text-[8rem] font-bold rounded-full w-fit h-fit px-20 flex items-center justify-center shadow-md">
+                    {seconds}
                   </div>
                 </div>
 
-                <p className="text-[4rem] text-gray-800 font-medium mb-6">{currentQuestion ? currentQuestion['question'] : ""} ? </p>
+                <p className="text-[8rem] text-gray-800 font-medium mb-6 capitalize ">{currentQuestion ? currentQuestion['question'] : ""} ? </p>
               </div>
               <div className="text-center">
                 <span className="inline-block bg-orange-100 px-6 py-2 rounded-full text-sm font-semibold text-orange-800 shadow-sm">
@@ -1099,7 +1180,7 @@ const Questionnaire = () => {
 
         {
           state == "options-revealed" || state == "timer-started" || state == "answer-revealed" && auth.user || state == "" && auth.user || options_revealed == 1 && state != "answer-revealed" && selectedOption != null ?
-            <div className="grid grid-cols-2 gap-6 mt-6 justify-center relative">
+            <div className="grid grid-cols-2 gap-6 mt-6 justify-center relative w-full">
 
               {currentQuestion && currentQuestion["options"] && (() => {
                 try {
@@ -1114,7 +1195,7 @@ const Questionnaire = () => {
                         onClick={() => submitAnswer(option)}
                         className={`
                   ${isSelected ? 'bg-green-600 shadow-orange-200' : isDisabled ? 'bg-orange-300' : 'bg-orange-500 hover:bg-orange-600'}
-                  text-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-center text-lg font-medium
+                  text-white  rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-center text-4xl capitalize font-medium p-10
                   ${isDisabled ? 'cursor-not-allowed opacity-75' : 'hover:scale-102'}
                   w-full break-words whitespace-normal
                 `}
@@ -1131,24 +1212,24 @@ const Questionnaire = () => {
 
                     return <RadioGroup onValueChange={(value) => submitAnswer(value)} className='flex p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-orange-200 w-[100%]'>
 
-                      <div className="flex items-center justify-center flex-1 space-x-3">
+                      <div className="flex items-center justify-center flex-1 space-x-3 w-full">
                         <RadioGroupItem
                           disabled={isDisabled}
 
                           value="true"
                           id="option-one"
-                          className="border-orange-400 text-orange-600 focus:ring-orange-400"
+                          className="border-orange-400 text-orange-600 focus:ring-orange-400 h-8 w-8"
                         />
-                        <Label htmlFor="option-one" className="text-lg font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">TRUE</Label>
+                        <Label htmlFor="option-one" className="text-4xl font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">TRUE</Label>
                       </div>
                       <div className="flex items-center justify-center flex-1 space-x-3">
                         <RadioGroupItem
                           disabled={isDisabled}
                           value="false"
                           id="option-two"
-                          className="border-orange-400 text-orange-600 focus:ring-orange-400"
+                          className="border-orange-400 text-orange-600 focus:ring-orange-400 h-8 w-8"
                         />
-                        <Label htmlFor="option-two" className="text-lg font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">FALSE</Label>
+                        <Label htmlFor="option-two" className="text-4xl font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">FALSE</Label>
                       </div>
                     </RadioGroup>;
 
@@ -1182,7 +1263,7 @@ const Questionnaire = () => {
 
         {
           state == "answer-revealed" && !auth.user ?
-            <div className="grid grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-2 gap-6 mt-6 w-full">
               {
                 currentQuestion ?
                   JSON.parse(currentQuestion["options"])?.map((option: any, index: number) => (
@@ -1261,7 +1342,7 @@ const Questionnaire = () => {
 
         {/* LEADERBOARD */}
         {state == "leaderboard-revealed" || state == "finished" || state == "over-all-leaderboard" ?
-          <div className="mt-8 bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-lg">
+          <div className="mt-8 bg-gradient-to-br from-orange-50 to-orange-100 w-full p-6 rounded-xl shadow-lg border border-red-500">
             {
               state != "over-all-leaderboard" ?
                 <div className='flex items-center gap-x-4'>
@@ -1313,8 +1394,8 @@ const Questionnaire = () => {
                       <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
                         {
                           rank.prev_answer_correct == 1 ?
-                          state != "over-all-leaderboard" ? currentQuestion ? currentQuestion['points'] : "" : rank.score <= 0 ? 0 : rank.score : 
-                          state != "over-all-leaderboard" ? 0 : rank.score
+                            state != "over-all-leaderboard" ? currentQuestion ? currentQuestion['points'] : "" : rank.score <= 0 ? 0 : rank.score :
+                            state != "over-all-leaderboard" ? 0 : rank.score
                         }
                       </div>
                     </TableCell>
@@ -1345,6 +1426,18 @@ const Questionnaire = () => {
             </Table>
           </div>
           : ""
+        }
+        {
+          state == "finished" && auth?.user || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
+            <div className=' w-full flex justify-center'>
+              {/* 
+          <Button onClick={() => handleGenerateReport()}>
+            <PrinterIcon />
+            Print Event Results</Button> */}
+              <Button className="bg-orange-600 hover:bg-orange-600/65 text-white text-2xl px-14 h-14" onClick={handleGenerateReport} disabled={savingShortAns}>
+                {savingShortAns ? 'Generating Report...' : 'Generate Excel Report'}
+              </Button>
+            </div> : ""
         }
 
       </div>
@@ -1391,18 +1484,6 @@ const Questionnaire = () => {
           </div> : ""
       }
 
-      {
-        state == "finished" && auth?.user || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
-          <div className=' w-full flex justify-center'>
-            {/* 
-          <Button onClick={() => handleGenerateReport()}>
-            <PrinterIcon />
-            Print Event Results</Button> */}
-            <Button className="bg-orange-600 hover:bg-orange-600/65 text-white " onClick={handleGenerateReport} disabled={savingShortAns}>
-              {savingShortAns ? 'Generating Report...' : 'Generate Excel Report'}
-            </Button>
-          </div> : ""
-      }
 
     </div >
   )

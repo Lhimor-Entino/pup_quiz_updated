@@ -26,12 +26,12 @@ const QuizStatisticsDashboard = () => {
       { name: 'Geography', count: 22, color: '#9a3412' }
     ]
   });
-  const orangeShades = [
-    "#f97316", // standard orange
-    "#ea580c", // dark orange
-    "#dc2626", // light orange
-    "#c2410c", // pastel orange
-    "#9a3412", // coral/orange
+  const redShades = [
+    "#f97316", // standard red
+    "#ea580c", // dark red
+    "#dc2626", // light red
+    "#c2410c", // pastel red
+    "#9a3412", // coral/red
 
   ];
   useEffect(() => {
@@ -61,7 +61,7 @@ const QuizStatisticsDashboard = () => {
 const result = categories?.map((subject, index) => ({
   name: subject.subject_name,
   count: questionCounts[subject.id] || 0,
-  color: orangeShades[Math.floor(Math.random() * orangeShades.length)]
+  color: redShades[Math.floor(Math.random() * redShades.length)]
 }));
     setCategoriesQuestions(result)
   }, [categories, questions])
@@ -80,7 +80,7 @@ const result = categories?.map((subject, index) => ({
 
   return (
     <AuthenticatedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col p-6">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex flex-col p-6">
         <div className='bg-white/80 backdrop-blur-sm grid grid-cols-1 rounded-xl shadow-lg p-6 gap-6'>
           {/* Sidebar */}
 
@@ -88,8 +88,8 @@ const result = categories?.map((subject, index) => ({
           {/* Main Dashboard Content */}
           <div className='col-span-5 space-y-6'>
             <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-orange-800 tracking-tight">Quiz Statistics Dashboard</h1>
-              <div className="text-sm text-orange-600 bg-orange-100 px-3 py-1 rounded-full">
+              <h1 className="text-3xl font-bold text-red-800 tracking-tight">Quiz Statistics Dashboard</h1>
+              <div className="text-sm text-red-600 bg-red-100 px-3 py-1 rounded-full">
                 Last updated: Today
               </div>
             </div>
@@ -102,75 +102,75 @@ const result = categories?.map((subject, index) => ({
                 title="Total Questions"
                 value={questions?.length || 0}
                 subtitle="Across all levels"
-                gradient="from-orange-500 to-orange-600"
+                gradient="from-red-500 to-red-600"
               />
               <StatCard
                 icon={TrendingUp}
                 title="Level with Highest Correct Percentage"
                 value={topLobbyCategory?.difficulty}
                 subtitle={`${topLobbyCategory?.total_questions || 0} questions`}
-                gradient="from-orange-600 to-orange-700"
+                gradient="from-red-600 to-red-700"
               />
               <StatCard
                 icon={Target}
                 title="Categories"
                 value={categories.length}
                 subtitle="Active categories"
-                gradient="from-orange-700 to-orange-800"
+                gradient="from-red-700 to-red-800"
               />
               <StatCard
                 icon={Award}
                 title="Completion Rate"
                 value="100%"
                 subtitle="Average across levels"
-                gradient="from-orange-800 to-orange-900"
+                gradient="from-red-800 to-red-900"
               />
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Bar Chart - Questions by Level */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-orange-200">
-                <h3 className="text-xl font-semibold text-orange-800 mb-4">Questions by Difficulty Level</h3>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-red-200">
+                <h3 className="text-xl font-semibold text-red-800 mb-4">Questions by Difficulty Level</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={byLevel}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#fed7aa" />
-                    <XAxis
-                      dataKey="level"
-                      stroke="#ea580c"
-                      fontSize={12}
-                    />
-                    <YAxis
-                      stroke="#ea580c"
-                      fontSize={12}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff7ed',
-                        border: '1px solid #fed7aa',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Bar
-                      dataKey="count"
-                      fill="url(#orangeGradient)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <defs>
-                      <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f97316" />
-                        <stop offset="100%" stopColor="#ea580c" />
-                      </linearGradient>
-                    </defs>
-                  </BarChart>
+<BarChart data={byLevel}>
+  <CartesianGrid strokeDasharray="3 3" stroke="#fecaca" />
+  <XAxis
+    dataKey="level"
+    stroke="#dc2626"
+    fontSize={12}
+  />
+  <YAxis
+    stroke="#dc2626"
+    fontSize={12}
+  />
+  <Tooltip
+    contentStyle={{
+      backgroundColor: '#fef2f2',
+      border: '1px solid #fecaca',
+      borderRadius: '8px'
+    }}
+  />
+  <Bar
+    dataKey="count"
+    fill="url(#redGradient)"
+    radius={[4, 4, 0, 0]}
+  />
+  <defs>
+    <linearGradient id="redGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#ef4444" />
+      <stop offset="100%" stopColor="#dc2626" />
+    </linearGradient>
+  </defs>
+</BarChart>
                 </ResponsiveContainer>
               </div>
 
               {/* Pie Chart - Questions by Category */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-orange-200">
-                <h3 className="text-xl font-semibold text-orange-800 mb-4">Questions by Category</h3>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-red-200">
+                <h3 className="text-xl font-semibold text-red-800 mb-4">Questions by Category</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
+                  {/* <PieChart>
                     <Pie
                       data={categoriesQuestions}
                       cx="50%"
@@ -192,6 +192,50 @@ const result = categories?.map((subject, index) => ({
                       }}
                     />
                   </PieChart>
+                   */}
+                   <PieChart>
+  <Pie
+    data={categoriesQuestions}
+    cx="50%"
+    cy="50%"
+    innerRadius={60}
+    outerRadius={100}
+    paddingAngle={5}
+    dataKey="count"
+  >
+    {categoriesQuestions.map((entry, index) => {
+      // Red color palette with different shades
+      const redColors = [
+        '#fca5a5', // red-300
+        '#f87171', // red-400
+        '#ef4444', // red-500
+        '#dc2626', // red-600
+        '#b91c1c', // red-700
+        '#991b1b', // red-800
+        '#7f1d1d', // red-900
+        '#fda4af', // rose-300
+        '#f43f5e', // rose-500
+        '#e11d48', // rose-600
+        '#be123c', // rose-700
+        '#9f1239'  // rose-800
+      ];
+      
+      return (
+        <Cell 
+          key={`cell-${index}`} 
+          fill={redColors[index % redColors.length]} 
+        />
+      );
+    })}
+  </Pie>
+  <Tooltip
+    contentStyle={{
+      backgroundColor: '#fff1f2',
+      border: '1px solid #fda4af',
+      borderRadius: '8px'
+    }}
+  />
+</PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 space-y-2">
                   {categoriesQuestions.map((category, index) => (
@@ -201,9 +245,9 @@ const result = categories?.map((subject, index) => ({
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: category.color }}
                         ></div>
-                        <span className="text-orange-700">{category.name}</span>
+                        <span className="text-red-700">{category.name}</span>
                       </div>
-                      <span className="font-semibold text-orange-800">{category.count}</span>
+                      <span className="font-semibold text-red-800">{category.count}</span>
                     </div>
                   ))}
                 </div>
@@ -211,23 +255,23 @@ const result = categories?.map((subject, index) => ({
             </div>
 
             {/* Detailed Level Breakdown */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-orange-200">
-              <h3 className="text-xl font-semibold text-orange-800 mb-6">Detailed Level Breakdown</h3>
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-red-200">
+              <h3 className="text-xl font-semibold text-red-800 mb-6">Detailed Level Breakdown</h3>
               <div className="space-y-4">
                 {byLevel?.map((level, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-100">
+                  <div key={index} className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
                     <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold">
                         {level.level.charAt(0)}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-orange-800">{level.level}</h4>
-                        <p className="text-sm text-orange-600">{level.count} questions ({level.percentage}%)</p>
+                        <h4 className="font-semibold text-red-800">{level.level}</h4>
+                        <p className="text-sm text-red-600">{level.count} questions ({level.percentage}%)</p>
                       </div>
                     </div>
-                    <div className="w-32 bg-orange-200 rounded-full h-2">
+                    <div className="w-32 bg-red-200 rounded-full h-2">
                       <div
-                        className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-500"
+                        className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${level.percentage}%` }}
                       ></div>
                     </div>

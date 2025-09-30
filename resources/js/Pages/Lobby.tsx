@@ -270,7 +270,7 @@ const Lobby = () => {
                   ) : (
                     <>
                       <Trophy className="w-5 h-5" />
-                      <span>Start Quiz</span>
+                      <span>Proceed to Quiz</span>
                     </>
                   )}
                 </div>

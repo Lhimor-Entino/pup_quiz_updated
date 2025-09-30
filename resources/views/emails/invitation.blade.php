@@ -246,9 +246,18 @@
             <h2 class="greeting">Hello {{ $name }},</h2>
 
             <div class="message-body">
-                <p>{{ $body }}</p>
-            </div>
+                <p>You are invited to our quiz event! 🎉</p>
+                <p>Please click the button below to participate:</p>
 
+            </div>
+            <p>
+                <a href="{{ $link }}"
+                    style="display:inline-block;padding:10px 20px;
+                  background:#4CAF50;color:#fff;
+                  text-decoration:none;border-radius:5px;">
+                    Join Quiz
+                </a>
+            </p>
             <div class="divider"></div>
 
             <div class="email-info">

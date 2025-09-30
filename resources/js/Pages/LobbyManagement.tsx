@@ -77,12 +77,12 @@ const LobbyManagement = (props: Props) => {
   }
   return (
     <AuthenticatedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-amber-50 to-yellow-50 p-6">
 
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
               Lobby Logs
             </h1>
             <p className="text-gray-600">Monitor and track lobby activity</p>
@@ -90,14 +90,14 @@ const LobbyManagement = (props: Props) => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-lg border-l-4 border-orange-500 p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="bg-white rounded-xl shadow-lg border-l-4 border-red-500 p-6 hover:shadow-xl transition-shadow duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Lobby</p>
                   <p className="text-2xl font-bold text-gray-900">{sessionData.length}</p>
                 </div>
-                <div className="p-3 bg-orange-100 rounded-full">
-                  <User className="w-6 h-6 text-orange-600" />
+                <div className="p-3 bg-red-100 rounded-full">
+                  <User className="w-6 h-6 text-red-600" />
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@ const LobbyManagement = (props: Props) => {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-lg border-l-4 border-orange-500 p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="bg-white rounded-xl shadow-lg border-l-4 border-red-500 p-6 hover:shadow-xl transition-shadow duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Edited</p>
@@ -153,7 +153,7 @@ const LobbyManagement = (props: Props) => {
                 <input
                   type="text"
                   placeholder="Search by ID or IP address..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -162,7 +162,7 @@ const LobbyManagement = (props: Props) => {
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-gray-500" />
                 <select
-                  className="border border-gray-200 rounded-lg px-7 py-3  focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                  className="border border-gray-200 rounded-lg px-7 py-3  focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
                   value={filterActive}
                   onChange={(e) => setFilterActive(e.target.value)}
                 >
@@ -179,7 +179,7 @@ const LobbyManagement = (props: Props) => {
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-r from-orange-500 to-amber-500">
+                <thead className="bg-gradient-to-r from-red-500 to-amber-500">
                   <tr>
 
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white">User ID</th>
@@ -194,7 +194,7 @@ const LobbyManagement = (props: Props) => {
                   {filteredData.map((session, index) => (
                     <tr
                       key={session.id}
-                      className={`hover:bg-orange-50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      className={`hover:bg-red-50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                         }`}
                     >
 
@@ -237,8 +237,8 @@ const LobbyManagement = (props: Props) => {
 
             {filteredData.length === 0 && (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-orange-500" />
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-red-500" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No data found</h3>
                 <p className="text-gray-500">Try adjusting your search criteria or filters.</p>

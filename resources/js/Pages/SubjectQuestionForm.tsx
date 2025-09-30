@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState, useRef, useMemo, ChangeEvent, useEffect } from 'react';
-import { X, PlusCircle, Eye, Save, LogOut, Trash2, Copy, Clock, List, Star, Image as ImageIcon, Trash2Icon, Edit2Icon } from 'lucide-react';
+import { X, PlusCircle, Eye, Save, LogOut, Trash2, Copy, Clock, List, Star, Image as ImageIcon, Trash2Icon, Edit2Icon, ChevronDown } from 'lucide-react';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Button, Input } from '@headlessui/react';
 import { Label } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import EditModal from '@/CustomComponents/EditModal';
 import axios from 'axios';
 // Define interfaces for better type safety, matching backend snake_case for saving
@@ -147,7 +148,7 @@ export default function SubjectQuestionForm() {
         if (result.isConfirmed) {
             // Perform delete operation
             try {
-            
+
                 router.delete(route('question.delete'), {
                     data: { id: question.id },
                     onSuccess: () => {
@@ -165,248 +166,406 @@ export default function SubjectQuestionForm() {
 
         }
     };
+
     const updatePreview = () => {
+    const parsedQuestions = subject_questions[0].subjects_questions.map(q => ({
+        ...q,
+        options: JSON.parse(q.options),
+    }));
 
+    const merged = [...parsedQuestions, ...questions];
 
-        const parsedQuestions = subject_questions[0].subjects_questions.map(q => ({
-            ...q,
-            options: JSON.parse(q.options),
-        }));
+    const easy_questions = merged.filter(q => q.difficulty.toLowerCase() === "easy");
+    const average_questions = merged.filter(q => q.difficulty.toLowerCase() === "average");
+    const hard_questions = merged.filter(q => q.difficulty.toLowerCase() === "hard");
 
-
-
-        const merged = [...parsedQuestions, ...questions];
-
-        const easy_questions = merged.filter(q => q.difficulty.toLowerCase() == "easy")
-        const average_questions = merged.filter(q => q.difficulty.toLowerCase() == "average")
-        const hard_questions = merged.filter(q => q.difficulty.toLowerCase() == "hard")
-
-        const newPreviewContent = <div className='mt-3 flex flex-col gap-y-10'>
-
-            <div>
-                <p className='text-red-600 font-bold'>Easy Questions</p>
-                <Table>
-                    <TableCaption>A list Easy Questions.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">Question</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Answer</TableHead>
-                            <TableHead >Time Limit</TableHead>
-                            <TableHead >Points</TableHead>
-                            <TableHead >Action</TableHead>
+    // Reusable component for question table
+    const QuestionTable = ({ questions, difficulty, difficultyLabel }) => (
+        <Table>
+            <TableCaption>A list of {difficultyLabel} Questions.</TableCaption>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="w-[100px]">Question</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Answer</TableHead>
+                    <TableHead>Time Limit</TableHead>
+                    <TableHead>Points</TableHead>
+                    <TableHead>Action</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {questions.length > 0 ? (
+                    questions.map((q, index) => (
+                        <TableRow key={`${difficulty}-${q.id}`} id={`${difficulty}-${q.id}`}>
+                            <TableCell className="font-medium">
+                                <p className="font-semibold">
+                                    {q.questionText || q.question || 'Untitled'}
+                                </p>
+                            </TableCell>
+                            <TableCell>{q.type}</TableCell>
+                            <TableCell>
+                                {q.type === 'multiple-choice' && (
+                                    <ul className="list-disc ml-5 text-sm">
+                                        {q.options
+                                            .filter(opt => opt.isCorrect)
+                                            .map(opt => (
+                                                <li key={opt.id} className="text-green-600 font-medium list-none">
+                                                    {opt.text || 'Option'} (Correct)
+                                                </li>
+                                            ))
+                                        }
+                                    </ul>
+                                )}
+                                {q.type === 'true-false' && (
+                                    <p className="text-sm">
+                                        Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}
+                                    </p>
+                                )}
+                                {q.type === 'short-answer' && (
+                                    <p className="text-sm">
+                                        Correct Answer: {q.shortAnswer || 'Not set'}
+                                    </p>
+                                )}
+                            </TableCell>
+                            <TableCell>{q.timeLimit}</TableCell>
+                            <TableCell>{q.points}</TableCell>
+                            <TableCell>
+                                <div className="flex items-center justify-evenly space-x-2">
+                                    <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
+                                        <Trash2Icon 
+                                            onClick={() => handleDeleteQuestion(q, `${difficulty}-${q.id}`)} 
+                                            className="w-4 h-4 text-red-600" 
+                                        />
+                                    </div>
+                                    <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
+                                        <Edit2Icon 
+                                            onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} 
+                                            className="w-4 h-4 text-yellow-600" 
+                                        />
+                                    </div>
+                                </div>
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {
-                            easy_questions.length > 0 ?
-                                easy_questions?.map((q, index) =>
-                                    <TableRow key={`easy${q.id}`} id={`easy-${q.id}`}>
-                                        <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
-                                        <TableCell>{q.type}</TableCell>
-                                        <TableCell>
+                    ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={6} className="text-center text-gray-500">
+                            No {difficultyLabel.toLowerCase()} questions
+                        </TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
+    );
 
-                                            {q.type === 'multiple-choice' && (
-                                                <ul className="list-disc ml-5 text-sm">
-                                                    {q.options
-                                                        .filter(opt => opt.isCorrect)
-                                                        .map(opt => (
-                                                            <li key={opt.id} className="text-green-600 font-medium list-none">
-                                                                {opt.text || 'Option'} (Correct)
-                                                            </li>
-                                                        ))
-                                                    }
-
-                                                </ul>
-                                            )}
-                                            {q.type === 'true-false' && (
-                                                <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}</p>
-                                            )}
-                                            {q.type === 'short-answer' && (
-                                                <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
-                                            )}
-                                        </TableCell>
-                                        <TableCell >{q.timeLimit}</TableCell>
-                                        <TableCell>{q.points}</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center justify-evenly space-x-2">
-                                                <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q, `easy-${q.id}`)} className="w-4 h-4 text-red-600" />
-                                                </div>
-                                                <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
-                                                    <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-
-                                    </TableRow>
-                                )
-                                : <p>No easy questions</p>
-                        }
-
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div>
-                <p className='text-red-600 font-bold'>Average Questions</p>
-                <Table>
-                    <TableCaption>A list Average Questions.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">Question</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Answer</TableHead>
-                            <TableHead >Time Limit</TableHead>
-                            <TableHead >Points</TableHead>
-                            <TableHead >Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {
-                            average_questions.length > 0 ?
-                                average_questions?.map((q, index) =>
-                                    <TableRow key={q.id} id={`average-${q.id}`}>
-                                        <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
-                                        <TableCell>{q.type}</TableCell>
-                                        <TableCell>
-
-                                            {q.type === 'multiple-choice' && (
-                                                <ul className="list-disc ml-5 text-sm">
-                                                    {q.options
-                                                        .filter(opt => opt.isCorrect)
-                                                        .map(opt => (
-                                                            <li key={opt.id} className="text-green-600 font-medium list-none">
-                                                                {opt.text || 'Option'} (Correct)
-                                                            </li>
-                                                        ))
-                                                    }
-
-                                                </ul>
-                                            )}
-                                            {q.type === 'true-false' && (
-                                                <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}</p>
-                                            )}
-                                            {q.type === 'short-answer' && (
-                                                <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
-                                            )}
-                                        </TableCell>
-                                        <TableCell >{q.timeLimit}</TableCell>
-                                        <TableCell>{q.points}</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center justify-evenly space-x-2">
-                                                <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q, `average-${q.id}`)} className="w-4 h-4 text-red-600" />
-                                                </div>
-                                                <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
-                                                    <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-
-                                    </TableRow>
-                                )
-                                : <p>No average questions</p>
-                        }
-
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div>
-                <p className='text-red-600 font-bold'>Hard Questions</p>
-                <Table>
-                    <TableCaption>A list Hard Questions.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">Question</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Answer</TableHead>
-                            <TableHead >Time Limit</TableHead>
-                            <TableHead >Points</TableHead>
-                            <TableHead >Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {
-                            hard_questions.length > 0 ?
-                                hard_questions?.map((q, index) =>
-                                    <TableRow key={q.id} id={`hard-${q.id}`}>
-                                        <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
-                                        <TableCell>{q.type}</TableCell>
-                                        <TableCell>
-
-                                            {q.type === 'multiple-choice' && (
-                                                <ul className="list-disc ml-5 text-sm">
-                                                    {q.options
-                                                        .filter(opt => opt.isCorrect)
-                                                        .map(opt => (
-                                                            <li key={opt.id} className="text-green-600 font-medium list-none">
-                                                                {opt.text || 'Option'} (Correct)
-                                                            </li>
-                                                        ))
-                                                    }
-
-                                                </ul>
-                                            )}
-                                            {q.type === 'true-false' && (
-                                                <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}</p>
-                                            )}
-                                            {q.type === 'short-answer' && (
-                                                <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
-                                            )}
-                                        </TableCell>
-                                        <TableCell >{q.timeLimit}</TableCell>
-                                        <TableCell>{q.points}</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center justify-evenly space-x-2">
-                                                <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                                    <Trash2Icon onClick={() => handleDeleteQuestion(q, `hard-${q.id}`)} className="w-4 h-4 text-red-600" />
-                                                </div>
-                                                <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
-                                                    <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-
-                                    </TableRow>
-                                )
-                                : <p>No hard questions</p>
-                        }
-
-                    </TableBody>
-                </Table>
-            </div>
+    const newPreviewContent = (
+        <div className="mt-3">
+            <Tabs defaultValue="easy" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="easy" className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Easy ({easy_questions.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="average" className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                        Average ({average_questions.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="hard" className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        Hard ({hard_questions.length})
+                    </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="easy" className="mt-6">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <h3 className="text-lg font-semibold text-green-700">Easy Questions</h3>
+                        </div>
+                        <QuestionTable 
+                            questions={easy_questions} 
+                            difficulty="easy" 
+                            difficultyLabel="Easy" 
+                        />
+                    </div>
+                </TabsContent>
+                
+                <TabsContent value="average" className="mt-6">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <h3 className="text-lg font-semibold text-yellow-700">Average Questions</h3>
+                        </div>
+                        <QuestionTable 
+                            questions={average_questions} 
+                            difficulty="average" 
+                            difficultyLabel="Average" 
+                        />
+                    </div>
+                </TabsContent>
+                
+                <TabsContent value="hard" className="mt-6">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <h3 className="text-lg font-semibold text-red-700">Hard Questions</h3>
+                        </div>
+                        <QuestionTable 
+                            questions={hard_questions} 
+                            difficulty="hard" 
+                            difficultyLabel="Hard" 
+                        />
+                    </div>
+                </TabsContent>
+            </Tabs>
         </div>
+    );
+
+    setPreviewContent([newPreviewContent]);
+    setShowPreview(true);
+};
+    // const updatePreview = () => {
 
 
-        // const newPreviewContent = merged.map((q, index) => (
-        //     <div key={q.id} className="mb-2 p-2 border rounded-md bg-gray-50">
-        //         <p className="font-semibold">Question {index + 1}: {q.questionText || q.question || `Untitled ${q.type}`} </p>
-        //         <p className="text-xs text-gray-600">Difficulty: {q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</p> {/* Display difficulty */}
-        //         {q.type === 'multiple-choice' && (
-        //             <ul className="list-disc ml-5 text-sm">
-        //                 {q.options.map(opt => (
-        //                     <li key={opt.id} className={opt.isCorrect ? 'text-green-600 font-medium' : ''}>
-        //                         {opt.text || 'Option'} {opt.isCorrect && '(Correct)'}
-        //                     </li>
-        //                 ))}
-        //             </ul>
-        //         )}
-        //         {q.type === 'true-false' && (
-        //             <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer ? 'True' : 'False') : 'Not set'}</p>
-        //         )}
-        //         {q.type === 'short-answer' && (
-        //             <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
-        //         )}
-        //         {q.timeLimit && <p className="text-sm">Time Limit: {q.timeLimit} seconds</p>}
-        //         {q.points && <p className="text-sm">Points: {q.points}</p>}
-        //         {q.image != 0 && <img src={q.image} alt="Question" className="mt-2 h-20 w-auto object-cover rounded" />}
-        //     </div>
-        // ));
-        setPreviewContent([newPreviewContent]);
-        setShowPreview(true);
-    };
+    //     const parsedQuestions = subject_questions[0].subjects_questions.map(q => ({
+    //         ...q,
+    //         options: JSON.parse(q.options),
+    //     }));
+
+
+
+    //     const merged = [...parsedQuestions, ...questions];
+
+    //     const easy_questions = merged.filter(q => q.difficulty.toLowerCase() == "easy")
+    //     const average_questions = merged.filter(q => q.difficulty.toLowerCase() == "average")
+    //     const hard_questions = merged.filter(q => q.difficulty.toLowerCase() == "hard")
+
+    //     const newPreviewContent = <div className='mt-3 flex flex-col gap-y-10'>
+
+    //         <div>
+    //             <p className='text-red-600 font-bold'>Easy Questions</p>
+    //             <Table>
+    //                 <TableCaption>A list Easy Questions.</TableCaption>
+    //                 <TableHeader>
+    //                     <TableRow>
+    //                         <TableHead className="w-[100px]">Question</TableHead>
+    //                         <TableHead>Type</TableHead>
+    //                         <TableHead>Answer</TableHead>
+    //                         <TableHead >Time Limit</TableHead>
+    //                         <TableHead >Points</TableHead>
+    //                         <TableHead >Action</TableHead>
+    //                     </TableRow>
+    //                 </TableHeader>
+    //                 <TableBody>
+    //                     {
+    //                         easy_questions.length > 0 ?
+    //                             easy_questions?.map((q, index) =>
+    //                                 <TableRow key={`easy${q.id}`} id={`easy-${q.id}`}>
+    //                                     <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
+    //                                     <TableCell>{q.type}</TableCell>
+    //                                     <TableCell>
+
+    //                                         {q.type === 'multiple-choice' && (
+    //                                             <ul className="list-disc ml-5 text-sm">
+    //                                                 {q.options
+    //                                                     .filter(opt => opt.isCorrect)
+    //                                                     .map(opt => (
+    //                                                         <li key={opt.id} className="text-green-600 font-medium list-none">
+    //                                                             {opt.text || 'Option'} (Correct)
+    //                                                         </li>
+    //                                                     ))
+    //                                                 }
+
+    //                                             </ul>
+    //                                         )}
+    //                                         {q.type === 'true-false' && (
+    //                                             <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}</p>
+    //                                         )}
+    //                                         {q.type === 'short-answer' && (
+    //                                             <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
+    //                                         )}
+    //                                     </TableCell>
+    //                                     <TableCell >{q.timeLimit}</TableCell>
+    //                                     <TableCell>{q.points}</TableCell>
+    //                                     <TableCell>
+    //                                         <div className="flex items-center justify-evenly space-x-2">
+    //                                             <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
+    //                                                 <Trash2Icon onClick={() => handleDeleteQuestion(q, `easy-${q.id}`)} className="w-4 h-4 text-red-600" />
+    //                                             </div>
+    //                                             <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
+    //                                                 <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
+    //                                             </div>
+    //                                         </div>
+    //                                     </TableCell>
+
+    //                                 </TableRow>
+    //                             )
+    //                             : <p>No easy questions</p>
+    //                     }
+
+    //                 </TableBody>
+    //             </Table>
+    //         </div>
+
+    //         <div>
+    //             <p className='text-red-600 font-bold'>Average Questions</p>
+    //             <Table>
+    //                 <TableCaption>A list Average Questions.</TableCaption>
+    //                 <TableHeader>
+    //                     <TableRow>
+    //                         <TableHead className="w-[100px]">Question</TableHead>
+    //                         <TableHead>Type</TableHead>
+    //                         <TableHead>Answer</TableHead>
+    //                         <TableHead >Time Limit</TableHead>
+    //                         <TableHead >Points</TableHead>
+    //                         <TableHead >Action</TableHead>
+    //                     </TableRow>
+    //                 </TableHeader>
+    //                 <TableBody>
+    //                     {
+    //                         average_questions.length > 0 ?
+    //                             average_questions?.map((q, index) =>
+    //                                 <TableRow key={q.id} id={`average-${q.id}`}>
+    //                                     <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
+    //                                     <TableCell>{q.type}</TableCell>
+    //                                     <TableCell>
+
+    //                                         {q.type === 'multiple-choice' && (
+    //                                             <ul className="list-disc ml-5 text-sm">
+    //                                                 {q.options
+    //                                                     .filter(opt => opt.isCorrect)
+    //                                                     .map(opt => (
+    //                                                         <li key={opt.id} className="text-green-600 font-medium list-none">
+    //                                                             {opt.text || 'Option'} (Correct)
+    //                                                         </li>
+    //                                                     ))
+    //                                                 }
+
+    //                                             </ul>
+    //                                         )}
+    //                                         {q.type === 'true-false' && (
+    //                                             <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}</p>
+    //                                         )}
+    //                                         {q.type === 'short-answer' && (
+    //                                             <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
+    //                                         )}
+    //                                     </TableCell>
+    //                                     <TableCell >{q.timeLimit}</TableCell>
+    //                                     <TableCell>{q.points}</TableCell>
+    //                                     <TableCell>
+    //                                         <div className="flex items-center justify-evenly space-x-2">
+    //                                             <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
+    //                                                 <Trash2Icon onClick={() => handleDeleteQuestion(q, `average-${q.id}`)} className="w-4 h-4 text-red-600" />
+    //                                             </div>
+    //                                             <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
+    //                                                 <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
+    //                                             </div>
+    //                                         </div>
+    //                                     </TableCell>
+
+    //                                 </TableRow>
+    //                             )
+    //                             : <p>No average questions</p>
+    //                     }
+
+    //                 </TableBody>
+    //             </Table>
+    //         </div>
+
+    //         <div>
+    //             <p className='text-red-600 font-bold'>Hard Questions</p>
+    //             <Table>
+    //                 <TableCaption>A list Hard Questions.</TableCaption>
+    //                 <TableHeader>
+    //                     <TableRow>
+    //                         <TableHead className="w-[100px]">Question</TableHead>
+    //                         <TableHead>Type</TableHead>
+    //                         <TableHead>Answer</TableHead>
+    //                         <TableHead >Time Limit</TableHead>
+    //                         <TableHead >Points</TableHead>
+    //                         <TableHead >Action</TableHead>
+    //                     </TableRow>
+    //                 </TableHeader>
+    //                 <TableBody>
+    //                     {
+    //                         hard_questions.length > 0 ?
+    //                             hard_questions?.map((q, index) =>
+    //                                 <TableRow key={q.id} id={`hard-${q.id}`}>
+    //                                     <TableCell className="font-medium">     <p className="font-semibold"> {q.questionText || q.question || `Untitled`} </p></TableCell>
+    //                                     <TableCell>{q.type}</TableCell>
+    //                                     <TableCell>
+
+    //                                         {q.type === 'multiple-choice' && (
+    //                                             <ul className="list-disc ml-5 text-sm">
+    //                                                 {q.options
+    //                                                     .filter(opt => opt.isCorrect)
+    //                                                     .map(opt => (
+    //                                                         <li key={opt.id} className="text-green-600 font-medium list-none">
+    //                                                             {opt.text || 'Option'} (Correct)
+    //                                                         </li>
+    //                                                     ))
+    //                                                 }
+
+    //                                             </ul>
+    //                                         )}
+    //                                         {q.type === 'true-false' && (
+    //                                             <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}</p>
+    //                                         )}
+    //                                         {q.type === 'short-answer' && (
+    //                                             <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
+    //                                         )}
+    //                                     </TableCell>
+    //                                     <TableCell >{q.timeLimit}</TableCell>
+    //                                     <TableCell>{q.points}</TableCell>
+    //                                     <TableCell>
+    //                                         <div className="flex items-center justify-evenly space-x-2">
+    //                                             <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
+    //                                                 <Trash2Icon onClick={() => handleDeleteQuestion(q, `hard-${q.id}`)} className="w-4 h-4 text-red-600" />
+    //                                             </div>
+    //                                             <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
+    //                                                 <Edit2Icon onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} className="w-4 h-4 text-yellow-600" />
+    //                                             </div>
+    //                                         </div>
+    //                                     </TableCell>
+
+    //                                 </TableRow>
+    //                             )
+    //                             : <p>No hard questions</p>
+    //                     }
+
+    //                 </TableBody>
+    //             </Table>
+    //         </div>
+    //     </div>
+
+
+    //     // const newPreviewContent = merged.map((q, index) => (
+    //     //     <div key={q.id} className="mb-2 p-2 border rounded-md bg-gray-50">
+    //     //         <p className="font-semibold">Question {index + 1}: {q.questionText || q.question || `Untitled ${q.type}`} </p>
+    //     //         <p className="text-xs text-gray-600">Difficulty: {q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</p> {/* Display difficulty */}
+    //     //         {q.type === 'multiple-choice' && (
+    //     //             <ul className="list-disc ml-5 text-sm">
+    //     //                 {q.options.map(opt => (
+    //     //                     <li key={opt.id} className={opt.isCorrect ? 'text-green-600 font-medium' : ''}>
+    //     //                         {opt.text || 'Option'} {opt.isCorrect && '(Correct)'}
+    //     //                     </li>
+    //     //                 ))}
+    //     //             </ul>
+    //     //         )}
+    //     //         {q.type === 'true-false' && (
+    //     //             <p className="text-sm">Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer ? 'True' : 'False') : 'Not set'}</p>
+    //     //         )}
+    //     //         {q.type === 'short-answer' && (
+    //     //             <p className="text-sm">Correct Answer: {q.shortAnswer || 'Not set'}</p>
+    //     //         )}
+    //     //         {q.timeLimit && <p className="text-sm">Time Limit: {q.timeLimit} seconds</p>}
+    //     //         {q.points && <p className="text-sm">Points: {q.points}</p>}
+    //     //         {q.image != 0 && <img src={q.image} alt="Question" className="mt-2 h-20 w-auto object-cover rounded" />}
+    //     //     </div>
+    //     // ));
+    //     setPreviewContent([newPreviewContent]);
+    //     setShowPreview(true);
+    // };
 
     const totalPoints = useMemo<number>(() => {
         const saveQuestionsTotalPoints = subject_questions[0].subjects_questions.reduce((sum, q) => sum + (parseInt(q.points) || 0), 0);
@@ -493,6 +652,7 @@ export default function SubjectQuestionForm() {
                     setQuestions([]);
                     setPreviewContent([]);
                     setShowPreview(false);
+                   
                 },
                 onError: (errors) => {
                     console.error('Error saving quiz:', errors);
@@ -534,6 +694,16 @@ export default function SubjectQuestionForm() {
             setQuizTitle(subject_questions[0]?.['quiz_title'] || "")
         }
     }, [subject_questions])
+    const [selectedRound, setSelectedRound] = useState('');
+
+    const rounds = [
+        { value: 'easy', label: 'Easy Round', color: 'red' },
+        { value: 'average', label: 'Average Round', color: 'red' },
+        { value: 'hard', label: 'Hard Round', color: 'red' }
+    ];
+
+    const currentRound = rounds.find(round => round.value === selectedRound);
+
     return (
         <AuthenticatedLayout>
             <Head title="Create Quiz" />
@@ -582,6 +752,8 @@ export default function SubjectQuestionForm() {
             )}
 
             <div className={`py-12 px-6 grid gap-6 transition-all duration-300 grid-cols-3`}>
+
+                
                 {/* Column 1 - Quiz Questions (Collapsible) */}
                 <div className={`relative transition-all duration-300 ${isFirstColumnCollapsed ? 'md:hidden' : 'block'
                     }`}>
@@ -593,7 +765,63 @@ export default function SubjectQuestionForm() {
                     >
                         {isFirstColumnCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                     </button>
+                     <div>
+                        <div className="mt-6 mb-10">
+                            {/* Round Selector */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Select Difficulty Round
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        value={selectedRound}
+                                        onChange={(e) => setSelectedRound(e.target.value)}
+                                        className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    >
+                                         <option  value={""}>
+                                              Select
+                                            </option>
+                                        {rounds.map(round => (
+                                            <option key={round.value} value={round.value}>
+                                                {round.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                </div>
+                            </div>
 
+                            {/* Question Type Buttons */}
+                            {selectedRound !== ""
+                            &&  <div className="flex flex-wrap gap-3">
+                                <p className={`border-b border-${currentRound.color}-600 w-full p-2 font-bold text-${currentRound.color}-600`}>
+                                    {currentRound.label}
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                                    <button
+                                        onClick={() => addQuestion('multiple-choice', selectedRound)}
+                                        className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
+                                    >
+                                        <PlusCircle size={20} /> Add Multiple Choice
+                                    </button>
+                                    <button
+                                        onClick={() => addQuestion('true-false', selectedRound)}
+                                        className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
+                                    >
+                                        <PlusCircle size={20} /> Add True/False
+                                    </button>
+                                    <button
+                                        onClick={() => addQuestion('short-answer', selectedRound)}
+                                        className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
+                                    >
+                                        <PlusCircle size={20} /> Add Short Answer
+                                    </button>
+                                </div>
+                            </div>
+                            }
+                           
+                        </div>
+                    </div>
                     <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
                     <input
                         id="quiz-title"
@@ -792,77 +1020,7 @@ export default function SubjectQuestionForm() {
                             </div>
                         ))}
                     </div>
-                    <div>
-                        <div className="mt-6 flex flex-wrap gap-3">
-                            <p className='border-b border-red-600 w-full p-2 font-bold text-red-600'>Easy Round</p>
-                            <div className=' grid grid-flow-col grid-cols-2'>
-                                <button
-                                    onClick={() => addQuestion('multiple-choice', 'easy')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add Multiple Choice
-                                </button>
-                                <button
-                                    onClick={() => addQuestion('true-false', 'easy')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add True/False
-                                </button>
-                                <button
-                                    onClick={() => addQuestion('short-answer', 'easy')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add Short Answer
-                                </button>
-                            </div>
-                        </div>
-                        <div className="mt-6 flex flex-wrap gap-3">
-                            <p className='border-b border-red-600 w-full p-2 font-bold text-red-600'>Average Round</p>
-                            <div className=' grid grid-flow-col grid-cols-2'>
-                                <button
-                                    onClick={() => addQuestion('multiple-choice', 'average')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add Multiple Choice
-                                </button>
-                                <button
-                                    onClick={() => addQuestion('true-false', 'average')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add True/False
-                                </button>
-                                <button
-                                    onClick={() => addQuestion('short-answer', 'average')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add Short Answer
-                                </button>
-                            </div>
-                        </div>
-                        <div className="mt-6 flex flex-wrap gap-3">
-                            <p className='border-b border-red-600 w-full p-2 font-bold text-red-600'>Hard Round</p>
-                            <div className=' grid grid-flow-col grid-cols-2'>
-                                <button
-                                    onClick={() => addQuestion('multiple-choice', 'hard')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add Multiple Choice
-                                </button>
-                                <button
-                                    onClick={() => addQuestion('true-false', 'hard')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add True/False
-                                </button>
-                                <button
-                                    onClick={() => addQuestion('short-answer', 'hard')}
-                                    className="bg-red-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                >
-                                    <PlusCircle size={20} /> Add Short Answer
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                        {/* // */}
                 </div>
 
                 {/* Collapsed State - Show Expand Button */}

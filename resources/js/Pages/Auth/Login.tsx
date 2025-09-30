@@ -33,19 +33,29 @@ export default function Login({
         post(route('otp-login'), {
             onFinish: () => reset('password'),
             onSuccess: () => {setOpenOTPModal(true); localStorage.setItem("email",data.email)},
-            onError: () => {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'error',
-                    title: 'Incorrect email or password',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    background: '#fff',
-                    color: '#e3342f',
-                    iconColor: '#e3342f',
-                });
+            onError: (errors) => {
+                    // If backend sent JSON with "msg"
+            let message = "Incorrect email or password";
+
+            // Inertia puts plain JSON under errors.response if it's not a validation error
+            if (errors && typeof errors === "object") {
+                if (errors.msg) {
+                    message = errors.msg;
+                }
+            }
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: '#fff',
+                color: '#e3342f',
+                iconColor: '#e3342f',
+            });
             },
         });
     };

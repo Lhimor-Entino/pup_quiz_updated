@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lobby;
 use App\Models\Subjects;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -52,10 +53,15 @@ class SubjectController extends Controller
         //     // 'user_id' => Auth::user()->id
         // ]);
 
+        $date = $request->input('date'); // e.g. "9/30/2025"
+
+        // Convert to proper format for MySQL
+        $startDate = Carbon::parse($date)->format('Y-m-d H:i:s');
         try {
             Subjects::create([
                 'subject_name' => $request->input('name'),
                 'lobby_id' => $request->input('id'),
+                'start_date' => $startDate,
                 'quiz_title' => ''
             ]);
         } catch (\Exception $e) {

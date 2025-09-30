@@ -27,6 +27,7 @@ use App\Models\QuizManagement;
 use App\Models\SessionLogs;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -47,9 +48,9 @@ Route::get('/login', function () {
 });
 
 
-Route::post('/otp-login', [EmailController::class,'sendOtp'])->name("otp-login");
-Route::post('/resendOTP', [EmailController::class,'resendOTP']);
-Route::post('/verifyOtp', [EmailController::class,'verifyOtp'])->name("verifyOtp");
+Route::post('/otp-login', [EmailController::class, 'sendOtp'])->name("otp-login");
+Route::post('/resendOTP', [EmailController::class, 'resendOTP']);
+Route::post('/verifyOtp', [EmailController::class, 'verifyOtp'])->name("verifyOtp");
 //Views Routes
 Route::get('/dashboard', function (Request $request) {
 
@@ -361,8 +362,29 @@ Route::get('/lobby/{id}/{subject_id}/{team_id?}', function ($id, $subject_id, $t
 })->name('lobby');
 
 
+
 Route::get('/questionnaire/{id}/{team_id}/{subject_id}', function ($id, $team_id, $subject_id) {
 
+
+
+    $subject = Subjects::where("id", $subject_id)->first();
+    $now = Carbon::now();
+    if ($subject) {
+      $start = Carbon::parse($subject->start_date);
+        if ($now->lessThan($start)) {
+        $diff = $now->diff($start); // DateInterval object
+
+        $days = $diff->d;
+        $hours = $diff->h;
+        $minutes = $diff->i;
+
+        $message = "Event will start in {$days}d {$hours}h {$minutes}m";
+
+        return Inertia::render("EventReminder", [
+            "msg" => $message
+        ]);
+    }
+    }
     // $lobby = Lobby::findOrFail($id);
     $lobby = Lobby::where("id", $id)
         ->where("archive", 0)
@@ -473,7 +495,7 @@ Route::get('/lobby-status/{id}', [LobbyController::class, 'lobbyStatus'])->name(
 Route::post('/add-subject-quiz', [SubjectQuestionController::class, 'store'])->name('add-subject-quiz');
 Route::get('/getLobbyQuestion/{lobby_id}/{subject_id}', [SubjectQuestionController::class, 'getLobbyQuestion'])->name('getLobbyQuestion');
 Route::get('/updateScore/{id}/{score}/{ans}/{question}/{lobby_id}/{question_id}/{q_type}', [ParticipantController::class, 'updateScore'])->name('updateScore');
-Route::get('/leaderboard/{id}', [ParticipantController::class, 'leaderboard'])->name('leaderboard');
+Route::get('/leaderboard/{id}/{subject_id}', [ParticipantController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/currentQuestionLeaderboard/{id}/{question_id}', [ParticipantController::class, 'currentQuestionLeaderboard'])->name('currentQuestionLeaderboard');
 Route::get('/participant-code-update/{id}/{code}', [ParticipantController::class, 'updateTeamCode'])->name('participant-code-update');
 Route::get('/participant-shor-answer/{id}', [ParticipantController::class, 'shortAnswer'])->name('participant-shor-answer');

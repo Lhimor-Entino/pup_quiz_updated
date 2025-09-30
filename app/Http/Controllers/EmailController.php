@@ -55,7 +55,7 @@ class EmailController extends Controller
         $user = User::where("email", $request->email)->first();
         $lOtp = LoginOtp::where('email', $request->email)->firstOrFail();
 
-        
+
         if (!$user) {
             return response()->json([
                 "error" => "Email not found"
@@ -84,7 +84,7 @@ class EmailController extends Controller
 
             Mail::to($email)->send(new OtpMail($name, $email, $subject, $body));
 
-               return response()->json(['success' => 'New OTP sent successfully'], 200);
+            return response()->json(['success' => 'New OTP sent successfully'], 200);
         } catch (Exception $e) {
             return response()->json([
                 "msg" => "Failed to send OTP email",
@@ -95,24 +95,25 @@ class EmailController extends Controller
 
     public function sendOtp(Request $request)
     {
-          $lOtp = LoginOtp::where('email', $request->email)->firstOrFail();
+
+        $lOtp = LoginOtp::where('email', $request->email)->first();
         $user = User::where("email", $request->email)->first();
 
         if (!$user) {
-            return response()->json([
-                "msg" => "Email not found"
-            ], 404);
+            return back()->withErrors([
+                'email' => 'Email not found',
+            ]);
         }
-         if ($lOtp) {
+        if ($lOtp) {
             $lOtp->delete();
         }
 
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                "msg" => "Invalid password"
-            ], 401);
-        }
 
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors([
+                'password' => 'Invalid password',
+            ]);
+        }
         try {
             $otp = rand(100000, 999999);
 

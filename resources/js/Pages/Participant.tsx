@@ -1,7 +1,7 @@
 import Footer from "@/CustomComponents/Footer";
 import { router } from "@inertiajs/react";
 import axios from "axios";
-import { Trash2Icon } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle, Mail, Sparkles, Trash2, Trash2Icon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Swal from 'sweetalert2';
 
@@ -19,6 +19,16 @@ const JoinPage = (props: Props) => {
     const [lobbyCode, setLobbyCode] = useState(null)
     const [subjects, setSubjects] = useState([]);
     const [participantId, setParticipantId] = useState(null);
+    // Pre-registration form states
+    // Pre-registration form states
+    const [formData, setFormData] = useState({
+        teamName: '',
+        teamLeader: '',
+        teamLeaderEmail: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
     useEffect(() => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         if (token) {
@@ -156,14 +166,16 @@ const JoinPage = (props: Props) => {
         }
     };
 
-    const handleAddTeam = async () => {
+    const handlePreRegistration = async () => {
+
+  
         if (!csrfToken) {
             console.error('CSRF token not found');
             return;
         }
 
         setIsJoining(true);
-
+        setIsSubmitting(true);
         try {
             const response = await fetch('/participant', {
                 method: 'POST',
@@ -172,7 +184,10 @@ const JoinPage = (props: Props) => {
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({
-                    "team": teamName,
+                    "team": formData.teamName,
+                    "team_leader": formData.teamLeader,
+                    "team_leader_email": formData.teamLeaderEmail,
+                    "subject": selectedSubjects[0],
                     members: JSON.stringify(members),
                     "lobbyCode": lobbyCode
                 }),
@@ -205,6 +220,7 @@ const JoinPage = (props: Props) => {
             });
         } finally {
             setIsJoining(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -307,28 +323,46 @@ const JoinPage = (props: Props) => {
             console.log(error)
         }
     }
+    const handleFormChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+      const [isVisible, setIsVisible] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+    setTimeout(() => setShowConfetti(true), 500);
+  }, []);
+
+  const eventDate = new Date();
+  eventDate.setDate(eventDate.getDate() + 14); // 14 days from now
+  const inviteDate = new Date();
+  inviteDate.setDate(inviteDate.getDate() + 9); // 5 days before event
     return (
         <div
-            className="min-h-screen w-full bg-cover bg-center flex items-start justify-center relative"
+            className="min-h-screen w-full bg-cover bg-center  flex items-start justify-center relative"
             style={{
                 backgroundImage: "url('/images/bgonly.png')",
             }}
         >
-            <div className="relative z-10 w-full max-w-md px-6 text-center pt-0 flex flex-col justify-start">
+            <div className="relative z-10 w-full max-w-md px-6 text-center pt-0 flex flex-col justify-start items-center">
                 <img
                     src="/images/carousel/logooo.png"
                     alt="Logo"
                     className=""
                 />
-
-                <div className="bg-white/90 rounded-lg p-6 shadow-lg">
+                <div className="bg-white/90 rounded-lg p-6 shadow-lg w-fit min-w-[30rem]">
                     {/* Stepper */}
                     <div className="mb-6 flex justify-center items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 1 ? 'bg-orange-500 text-white' : 'bg-orange-200'}`}>1</div>
-                        <div className={`w-16 h-1 ${currentStep === 2 ? 'bg-orange-500' : 'bg-orange-200'}`}></div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 2 ? 'bg-orange-500 text-white' : 'bg-orange-200'}`}>2</div>
-                        <div className={`w-16 h-1 ${currentStep === 3 ? 'bg-orange-500' : 'bg-orange-200'}`}></div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 3 ? 'bg-orange-500 text-white' : 'bg-orange-200'}`}>3</div>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 1 ? 'bg-red-600 text-white' : 'bg-red-200'}`}>1</div>
+                        <div className={`w-16 h-1 ${currentStep === 2 ? 'bg-red-600' : 'bg-red-200'}`}></div>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 2 ? 'bg-red-600 text-white' : 'bg-red-200'}`}>2</div>
+                        <div className={`w-16 h-1 ${currentStep === 3 ? 'bg-red-600' : 'bg-orange-200'}`}></div>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 3 ? 'bg-red-600 text-white' : 'bg-red-200'}`}>3</div>
                     </div>
                     {currentStep === 1 ?
                         <div>
@@ -348,7 +382,7 @@ const JoinPage = (props: Props) => {
 
                                 <button
                                     onClick={() => handleEnterCode()}
-                                    className="flex-1 py-2 px-4 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition duration-200"
+                                    className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 transition duration-200"
                                 >
                                     Continue
                                 </button>
@@ -356,134 +390,216 @@ const JoinPage = (props: Props) => {
                         </div>
 
                         : ""}
-                    {currentStep === 2 ? (
-                        <form onSubmit={(e) => { e.preventDefault(); handleAddTeam(); }} className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Team Name"
-                                value={teamName}
-                                onChange={(e) => setTeamName(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-gray-800"
-                                required
-                            />
+                    {/* Step 2: Pre-Registration Form */}
+                    {currentStep === 2 && (
+                        <div className="w-[50rem]">
+                            <h2 className="text-xl font-semibold mb-4 text-gray-800">Pre-Registration Form</h2>
+                            <div className="text-left mb-4">
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Select Subject * </label>
+                                <select
+                                    value={selectedSubjects[0] || ''}
+                                    onChange={(e) => setSelectedSubjects(e.target.value ? [e.target.value] : [])}
+                                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-800 bg-white"
+                                    required
+                                >
+                                    <option value="">Choose a subject...</option>
+                                    {subjects.map((subject) => (
+                                        <option key={subject.subject_name} value={subject.subject_name}>
+                                            {subject.subject_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                            <div className="space-y-2">
-                                <div className="pr-5 max-h-44 overflow-y-scroll">
-                                    {members.map((member, index) => (
-                                        <div key={index} className="flex gap-y-2 items-center">
+                            <div className="space-y-4">
+                                {/* Team Name */}
+                                {/* <div className="text-left">
+                                    <label className="block text-sm font-medium text-gray-600 mb-1">Team Name *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.teamName}
+                                        onChange={(e) => handleFormChange('teamName', e.target.value)}
+                                        className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                                        required
+                                    />
+                                </div> */}
+
+                                {/* Team Leader Information */}
+                                <div className="bg-gray-50 p-4 rounded-lg text-left">
+                                    <h3 className="font-semibold text-gray-700 mb-3 text-center">Team Leader</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Team Leader Name *</label>
                                             <input
                                                 type="text"
-                                                placeholder={index === 0 ? "Team Leader" : `Member ${index + 1}`}
-                                                value={member.name}
-                                                onChange={(e) => {
-                                                    const newMembers = [...members];
-                                                    newMembers[index].name = e.target.value;
-                                                    setMembers(newMembers);
-                                                }}
-                                                className="w-full mb-2 mr-2 p-3 border border-gray-300 rounded-lg text-gray-800"
-                                                required={index === 0}
+                                                value={formData.teamLeader}
+                                                onChange={(e) => handleFormChange('teamLeader', e.target.value)}
+                                                className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                                                required
                                             />
-                                            {members.length > 1 && (
-                                                <Trash2Icon
-                                                    className="h-5 w-5 text-gray-400 hover:text-red-500 transition-colors duration-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        const newMembers = members.filter((_, i) => i !== index);
-                                                        setMembers(newMembers);
-                                                    }}
-                                                />
-                                            )}
                                         </div>
-                                    ))}
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Team Leader Email *</label>
+                                            <input
+                                                type="email"
+                                                value={formData.teamLeaderEmail}
+                                                onChange={(e) => handleFormChange('teamLeaderEmail', e.target.value)}
+                                                className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setMembers([...members, { name: "" }])}
-                                    className="w-full p-2 mt-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700"
-                                >
-                                    + Add Member
-                                </button>
+                                {/* Team Members */}
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h3 className="font-semibold text-gray-700 mb-3">Team Members</h3>
+
+                                    <div className="space-y-2">
+                                        <div className="pr-5 max-h-44 overflow-y-scroll">
+                                            {members.map((member, index) => (
+                                                <div key={index} className="flex gap-y-2 items-center">
+                                                    <input
+                                                        type="text"
+                                                        placeholder={`Member ${index + 1} Name`}
+                                                        value={member.name}
+                                                        onChange={(e) => {
+                                                            const newMembers = [...members];
+                                                            newMembers[index].name = e.target.value;
+                                                            setMembers(newMembers);
+                                                        }}
+                                                        className="w-full mb-2 mr-2 p-3 border border-gray-300 rounded-lg text-gray-800"
+                                                    />
+                                                    {members.length > 1 && (
+                                                        <Trash2
+                                                            className="h-5 w-5 text-gray-400 hover:text-red-500 transition-colors duration-200 cursor-pointer"
+                                                            onClick={() => {
+                                                                const newMembers = members.filter((_, i) => i !== index);
+                                                                setMembers(newMembers);
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setMembers([...members, { name: "" }])}
+                                            className="w-full p-2 mt-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700"
+                                        >
+                                            + Add Member
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentStep(1)}
+                                        className="flex-1 py-2 px-4 rounded-lg border-2 border-red-600 text-red-600 hover:bg-orange-50 transition duration-200"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        onClick={handlePreRegistration}
+                                        disabled={isSubmitting}
+                                        className={`flex-1 py-3 px-6 rounded-lg text-white font-semibold 
+                                            ${isSubmitting ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'}
+                                            transition duration-200`}
+                                    >
+                                        {isSubmitting ? 'Submitting...' : 'Submit Pre-Registration'}
+                                    </button>
+                                </div>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={isJoining}
-                                className={`w-full mt-4 py-3 px-6 rounded-lg text-white font-semibold 
-                                    ${isJoining ? 'bg-gray-400' : 'bg-orange-500 hover:bg-orange-600'}
-                                    transition duration-200`}
-                            >
-                                {isJoining ? 'Submitting...' : 'Submit'}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    Swal.fire({
-                                        title: 'Enter Team Name',
-                                        input: 'text',
-                                        inputLabel: 'Team Name',
-                                        inputPlaceholder: 'Enter your team name',
-                                        showCancelButton: true,
-                                        confirmButtonText: 'Check Team',
-                                        confirmButtonColor: '#f97316',
-                                        cancelButtonText: 'Cancel',
-                                        inputValidator: (value) => {
-                                            if (!value) {
-                                                return 'You need to enter a team name!';
-                                            }
-                                        }
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            verifyTeam(result.value);
-                                        }
-                                    });
-                                }}
-                                className="w-full mt-2 py-2 px-6 rounded-lg text-orange-500 font-semibold border-2 border-orange-500 hover:bg-orange-50 transition duration-200"
-                            >
-                                Already Have a Team?
-                            </button>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setCurrentStep(1)}
-                                    className="flex-1 py-2 px-4 rounded-lg border-2 border-orange-500 text-orange-500 hover:bg-orange-50 transition duration-200"
-                                >
-                                    Back
-                                </button>
-
-                            </div>
-                        </form>
-                    ) : ""}
+                        </div>
+                    )}
 
                     {currentStep == 3 ? (
-                        <div>
-                            <h2 className="text-xl font-semibold mb-4 text-gray-800">Select Subjects</h2>
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                {subjects.map((subject) => (
-                                    <button
-                                        key={subject}
-                                        disabled={selectedSubjects.length > 0 ? selectedSubjects.includes(subject.subject_name) ? false : true : false}
-                                        onClick={() => toggleSubject(subject.subject_name)}
-                                        className={`p-3 rounded-lg border-2 transition duration-200 ${selectedSubjects.includes(subject.subject_name)
-                                            ? 'border-orange-500 bg-orange-50 text-orange-500'
-                                            : 'border-gray-300 hover:border-orange-400 text-gray-600'}`}
-                                    >
-                                        {subject.subject_name}
-                                    </button>
-                                ))}
+                        <div className="w-[50rem]">
+                            {/* Animated background elements */}
+                            <div className="absolute inset-0 overflow-hidden">
+                                <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+                                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
                             </div>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setCurrentStep(1)}
-                                    className="flex-1 py-2 px-4 rounded-lg border-2 border-orange-500 text-orange-500 hover:bg-orange-50 transition duration-200"
-                                >
-                                    Back
-                                </button>
-                                <button
-                                    onClick={handleSubjectSelection}
-                                    className="flex-1 py-2 px-4 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition duration-200"
-                                >
-                                    Continue
-                                </button>
+
+                      
+                            <div className={`relative z-10 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'
+                                }`}>
+                                <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 md:p-12 w-full shadow-2xl border border-white/20">
+
+                                    {/* Success Icon */}
+                                    <div className="relative mb-8">
+                                        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                                            <CheckCircle className="w-12 h-12 text-white" />
+                                        </div>
+                                        <div className="absolute -top-2 -right-2">
+                                            <Sparkles className="w-8 h-8 text-yellow-400 animate-spin" style={{ animationDuration: '3s' }} />
+                                        </div>
+                                    </div>
+
+                                    {/* Main Message */}
+                                    <div className="text-center mb-8">
+                                        <h1 className="text-3xl font-bold text-gray-800 mb-3">
+                                            Successfully Registered!
+                                        </h1>
+                                        <p className="text-gray-600 leading-relaxed">
+                                            You're all set for the event. We're excited to have you join us!
+                                        </p>
+                                    </div>
+
+                                    {/* Event Details Cards */}
+                                    <div className="space-y-4 mb-8">
+                                        {/* Event Date Card */}
+                                        {/* <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center space-x-6 hover:bg-red-100 transition-colors duration-300">
+                                            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+                                                <Calendar className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="flex flex-col justify-start">
+                                                <h3 className="font-semibold text-gray-800 text-start">Event Date</h3>
+                                                <p className="text-sm text-gray-600">{eventDate.toLocaleDateString('en-US', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}</p>
+                                            </div>
+                                        </div> */}
+
+                                        {/* Invite Link Card */}
+                                        {/* <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center space-x-6 hover:bg-blue-100 transition-colors duration-300">
+                                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                                                <Mail className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="flex flex-col justify-start">
+                                                <h3 className="font-semibold text-gray-800 text-start">Invite Link</h3>
+                                                <p className="text-sm text-gray-600">
+                                                    Expect your invite link on {inviteDate.toLocaleDateString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric'
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div> */}
+                                    </div>
+
+                                    {/* Call to Action */}
+                                    <div className="text-center space-y-4">
+                                        {/* <div className="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-center space-x-2">
+                                            <span>Add to Calendar</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </div> */}
+
+                                        <p className="text-xs text-gray-500">
+                                            Keep an eye on your email for updates and your event invite link
+                                        </p>
+                                    </div>
+
+                                    {/* Decorative bottom border */}
+                                    <div className="mt-8 h-1 bg-gradient-to-r from-red-400 via-red-600 to-red-400 rounded-full"></div>
+                                </div>
                             </div>
                         </div>
                     ) : ""}

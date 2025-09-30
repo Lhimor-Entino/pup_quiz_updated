@@ -129,46 +129,46 @@ const OrganizerLobby = (props: Props) => {
     return (
         <AuthenticatedLayout>
             <Head title="Event Rooms" />
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col p-6">
+            <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex flex-col p-6">
 
 
                 <div className='bg-white/80 backdrop-blur-sm grid rounded-xl shadow-lg p-6 gap-6'>
 
 
                     <div className='col-span-5 space-y-6'>
-                        <h1 className="text-3xl font-bold text-orange-800 tracking-tight">Event Rooms</h1>
+                        <h1 className="text-3xl font-bold text-red-800 tracking-tight">Event Rooms</h1>
                         <div className="flex justify-end">
                             {/* <Dialog>
                             <DialogTrigger asChild>
-                                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300">
+                                <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300">
                                     Add Lobby +
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px] bg-white">
                                 <DialogHeader>
-                                    <DialogTitle className="text-2xl font-semibold text-orange-700">Create New Lobby</DialogTitle>
-                                    <DialogDescription className="text-orange-600/80">
+                                    <DialogTitle className="text-2xl font-semibold text-red-700">Create New Lobby</DialogTitle>
+                                    <DialogDescription className="text-red-600/80">
                                         Fill in the details below to create a new lobby.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name" className="text-sm font-medium text-orange-700">Lobby Name</Label>
+                                        <Label htmlFor="name" className="text-sm font-medium text-red-700">Lobby Name</Label>
                                         <Input
                                             id="name"
                                             placeholder="Enter lobby name"
-                                            className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                            className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                             value={data.name}
                                             onChange={e => setData('name', e.target.value)}
                                         />
                                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="code" className="text-sm font-medium text-orange-700">Lobby Code</Label>
+                                        <Label htmlFor="code" className="text-sm font-medium text-red-700">Lobby Code</Label>
                                         <Input
                                             id="code"
                                             placeholder="Enter lobby code"
-                                            className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                            className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                             value={data.code}
                                             onChange={e => setData('code', e.target.value)}
                                         />
@@ -177,7 +177,7 @@ const OrganizerLobby = (props: Props) => {
                                     <DialogFooter className="mt-6">
                                         <Button
                                             type="submit"
-                                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                                            className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
                                         >
                                             {processing ? 'Creating...' : 'Create Lobby'}
                                         </Button>
@@ -190,35 +190,35 @@ const OrganizerLobby = (props: Props) => {
                                 <div className="flex justify-end">
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300">
+                                            <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300">
                                                 Add Lobby +
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent className="sm:max-w-[425px] bg-white">
                                             <DialogHeader>
-                                                <DialogTitle className="text-2xl font-semibold text-orange-700">Create New Lobby</DialogTitle>
-                                                <DialogDescription className="text-orange-600/80">
+                                                <DialogTitle className="text-2xl font-semibold text-red-700">Create New Lobby</DialogTitle>
+                                                <DialogDescription className="text-red-600/80">
                                                     Fill in the details below to create a new lobby.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="name" className="text-sm font-medium text-orange-700">Lobby Name</Label>
+                                                    <Label htmlFor="name" className="text-sm font-medium text-red-700">Lobby Name</Label>
                                                     <Input
                                                         id="name"
                                                         placeholder="Enter lobby name"
-                                                        className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                                        className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                                         value={data.name}
                                                         onChange={e => setData('name', e.target.value)}
                                                     />
                                                     {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="code" className="text-sm font-medium text-orange-700">Lobby Code</Label>
+                                                    <Label htmlFor="code" className="text-sm font-medium text-red-700">Lobby Code</Label>
                                                     <Input
                                                         id="code"
                                                         placeholder="Enter lobby code"
-                                                        className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                                        className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                                         value={data.code}
                                                         onChange={e => setData('code', e.target.value)}
                                                     />
@@ -227,7 +227,7 @@ const OrganizerLobby = (props: Props) => {
                                                 <DialogFooter className="mt-6">
                                                     <Button
                                                         type="submit"
-                                                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                                                        className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
                                                     >
                                                         {processing ? 'Creating...' : 'Create Lobby'}
                                                     </Button>
@@ -241,22 +241,22 @@ const OrganizerLobby = (props: Props) => {
                         </div>
                         <div className="space-y-4">
                             {addLobby ? (
-                                <Card className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border border-orange-200">
+                                <Card className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border border-red-200">
                                     <CardHeader>
-                                        <CardTitle className='text-2xl text-orange-600 font-bold tracking-tight'>Add Event</CardTitle>
+                                        <CardTitle className='text-2xl text-red-600 font-bold tracking-tight'>Add Event</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="flex flex-col justify-start text-left gap-y-3">
-                                            <label className="font-semibold text-orange-700">Event Name</label>
+                                            <label className="font-semibold text-red-700">Event Name</label>
                                             <input
                                                 type="text"
-                                                className="w-full p-3 border border-orange-200 rounded-xl mb-4 text-orange-800 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                                                className="w-full p-3 border border-red-200 rounded-xl mb-4 text-red-800 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                                                 required
                                             />
                                         </div>
                                     </CardContent>
                                     <CardFooter>
-                                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300">
+                                        <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300">
                                             Create
                                         </Button>
                                     </CardFooter>
@@ -266,11 +266,11 @@ const OrganizerLobby = (props: Props) => {
                                     {availableLobbies.map((al) => (
                                         <Card
                                             key={al.lobby_code}
-                                            className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl border border-orange-200 transform hover:scale-[1.02] transition-all duration-300 overflow-hidden"
+                                            className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl border border-red-200 transform hover:scale-[1.02] transition-all duration-300 overflow-hidden"
                                         >
                                             <CardHeader className="pb-3">
                                                 <div className="flex justify-between items-start">
-                                                    <CardTitle className="text-xl uppercase font-bold text-orange-800 truncate pr-2">
+                                                    <CardTitle className="text-xl uppercase font-bold text-red-800 truncate pr-2">
                                                         {al.name}
                                                     </CardTitle>
                                                     <div className="flex space-x-1 flex-shrink-0">
@@ -293,7 +293,7 @@ const OrganizerLobby = (props: Props) => {
                                                                 });
                                                                 // You can add toast notification here
                                                             }}
-                                                            className="p-2 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 transition-colors duration-200"
+                                                            className="p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 transition-colors duration-200"
                                                             title="Copy lobby code"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -343,11 +343,11 @@ const OrganizerLobby = (props: Props) => {
                                                 {/* Lobby Code */}
                                                 <div className="flex justify-between items-center">
                                                     <div>
-                                                        <p className="text-sm text-orange-500 font-medium">Lobby Code </p>
-                                                        <p className="text-lg font-bold text-orange-700 font-mono tracking-wide">{al.lobby_code}</p>
+                                                        <p className="text-sm text-red-500 font-medium">Lobby Code </p>
+                                                        <p className="text-lg font-bold text-red-700 font-mono tracking-wide">{al.lobby_code}</p>
                                                     </div>
-                                                    <div className="bg-orange-100 px-3 py-1 rounded-full">
-                                                        <span className="text-xs font-semibold text-orange-600">ACTIVE</span>
+                                                    <div className="bg-red-100 px-3 py-1 rounded-full">
+                                                        <span className="text-xs font-semibold text-red-600">ACTIVE</span>
                                                     </div>
                                                 </div>
 
@@ -368,12 +368,12 @@ const OrganizerLobby = (props: Props) => {
                                                 {/* Participants */}
                                                 {/* <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                                                     <div className="flex items-center space-x-2">
-                                                        <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                                                         </svg>
                                                         <div>
                                                             <p className="text-sm text-gray-500">Participants</p>
-                                                            <p className="text-lg font-bold text-orange-600">
+                                                            <p className="text-lg font-bold text-red-600">
                                                                 {al.participants_count || 0}
                                                             </p>
                                                         </div>
@@ -385,7 +385,7 @@ const OrganizerLobby = (props: Props) => {
                                                             e.stopPropagation();
                                                             handleClickCategory(al.lobby_code);
                                                         }}
-                                                        className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg px-4 py-2 text-sm shadow-md hover:shadow-lg transition-all duration-300"
+                                                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg px-4 py-2 text-sm shadow-md hover:shadow-lg transition-all duration-300"
                                                     >
                                                         Enter
                                                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -400,23 +400,23 @@ const OrganizerLobby = (props: Props) => {
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
                                     <div className="mb-8">
-                                        <svg className="w-32 h-32 mx-auto text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-32 h-32 mx-auto text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
                                     </div>
 
-                                    <h3 className="text-2xl font-bold text-orange-800 mb-4">
+                                    <h3 className="text-2xl font-bold text-red-800 mb-4">
                                         No Event Rooms Yet
                                     </h3>
 
-                                    <p className="text-orange-600 mb-8 max-w-md leading-relaxed">
+                                    <p className="text-red-600 mb-8 max-w-md leading-relaxed">
                                         You haven't created any event rooms yet. Get started by creating your first lobby where participants can join and engage with your events.
                                     </p>
 
                                     <div className="space-y-4">
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+                                                <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
                                                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                                     </svg>
@@ -425,29 +425,29 @@ const OrganizerLobby = (props: Props) => {
                                             </DialogTrigger>
                                             <DialogContent className="sm:max-w-[425px] bg-white">
                                                 <DialogHeader>
-                                                    <DialogTitle className="text-2xl font-semibold text-orange-700">Create New Lobby</DialogTitle>
-                                                    <DialogDescription className="text-orange-600/80">
+                                                    <DialogTitle className="text-2xl font-semibold text-red-700">Create New Lobby</DialogTitle>
+                                                    <DialogDescription className="text-red-600/80">
                                                         Fill in the details below to create a new lobby.
                                                     </DialogDescription>
                                                 </DialogHeader>
                                                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="name" className="text-sm font-medium text-orange-700">Lobby Name</Label>
+                                                        <Label htmlFor="name" className="text-sm font-medium text-red-700">Lobby Name</Label>
                                                         <Input
                                                             id="name"
                                                             placeholder="Enter lobby name"
-                                                            className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                                            className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                                             value={data.name}
                                                             onChange={e => setData('name', e.target.value)}
                                                         />
                                                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="code" className="text-sm font-medium text-orange-700">Lobby Code</Label>
+                                                        <Label htmlFor="code" className="text-sm font-medium text-red-700">Lobby Code</Label>
                                                         <Input
                                                             id="code"
                                                             placeholder="Enter lobby code"
-                                                            className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                                            className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                                             value={data.code}
                                                             onChange={e => setData('code', e.target.value)}
                                                         />
@@ -456,7 +456,7 @@ const OrganizerLobby = (props: Props) => {
                                                     <DialogFooter className="mt-6">
                                                         <Button
                                                             type="submit"
-                                                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                                                            className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
                                                         >
                                                             {processing ? 'Creating...' : 'Create Lobby'}
                                                         </Button>
@@ -465,7 +465,7 @@ const OrganizerLobby = (props: Props) => {
                                             </DialogContent>
                                         </Dialog>
 
-                                        <div className="flex items-center justify-center space-x-6 pt-4 text-sm text-orange-500">
+                                        <div className="flex items-center justify-center space-x-6 pt-4 text-sm text-red-500">
                                             <div className="flex items-center">
                                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -494,30 +494,30 @@ const OrganizerLobby = (props: Props) => {
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogContent className="sm:max-w-[425px] bg-white">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-semibold text-orange-700">Edit Lobby</DialogTitle>
-                        <DialogDescription className="text-orange-600/80">
+                        <DialogTitle className="text-2xl font-semibold text-red-700">Edit Lobby</DialogTitle>
+                        <DialogDescription className="text-red-600/80">
                             Update the lobby details below.
                             {editData.code} {editData.name}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleEditSubmit} className="space-y-4 mt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit-name" className="text-sm font-medium text-orange-700">Lobby Name</Label>
+                            <Label htmlFor="edit-name" className="text-sm font-medium text-red-700">Lobby Name</Label>
                             <Input
                                 id="edit-name"
                                 placeholder="Enter lobby name"
-                                className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                                className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                 value={editData.name}
                                 onChange={e => setEditData('name', e.target.value)}
                             />
                             {editErrors.name && <p className="text-red-500 text-sm mt-1">{editErrors.name}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-code" className="text-sm font-medium text-orange-700">Lobby Code</Label>
+                            <Label htmlFor="edit-code" className="text-sm font-medium text-red-700">Lobby Code</Label>
                             <Input
                                 id="edit-code"
                                 placeholder="Enter lobby code"
-                                className="border-orange-200 focus:border-orange-500 focus:ring-orange-500 font-mono"
+                                className="border-red-200 focus:border-red-500 focus:ring-red-500 font-mono"
                                 value={editData.code}
                                 onChange={e => setEditData('code', e.target.value)}
                             />
@@ -539,7 +539,7 @@ const OrganizerLobby = (props: Props) => {
                                 </Button>
                                 <Button
                                     type="submit"
-                                    className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                                    className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-300"
                                 >
                                     {editProcessing ? 'Updating...' : 'Update Lobby'}
                                 </Button>

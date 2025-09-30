@@ -11,7 +11,8 @@ class Subjects extends Model
         'subject_name',
         'lobby_id',
         'quiz_title',
-        'current_level'
+        'current_level',
+        'start_date'
  
     ];
   

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\EventInvitationMail;
 use App\Models\Lobby;
 use App\Models\Participants;
 use App\Models\PointsHistory;
 use App\Models\SubjectQuestion;
+use App\Models\Subjects;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class ParticipantController extends Controller
@@ -92,13 +95,14 @@ class ParticipantController extends Controller
 
         return $participants;
     }
-    public function leaderboard($id)
+    public function leaderboard($id,$subject_id)
     {
 
         $lobby  = Lobby::where("id", $id)->first();
 
         return Participants::where('lobby_code', $lobby->lobby_code)
             ->where('archive', 1)
+            ->where("subject_id",$subject_id)
             ->orderBy('score', 'desc')
             ->orderBy('created_at', 'asc') // if scores are tied, earlier entry comes first
             ->get();
@@ -172,7 +176,7 @@ class ParticipantController extends Controller
         //
 
         $validator = Validator::make($request->all(), [
-            'team' => 'required|string|max:255',
+            // 'team' => 'required|string|max:255',
             'members' => 'required|string',
         ]);
 
@@ -182,12 +186,37 @@ class ParticipantController extends Controller
             ], 422);
         }
 
+        $lobby = Lobby::where("lobby_code", $request->input("lobbyCode"))->first();
+
+        $subject = Subjects::where("subject_name", $request->input("subject"))
+            ->where("lobby_id", $lobby->id)->first();
+
+
+
+        $id = $lobby->id;
+        $subject_id = $subject->id;
+        $team_count = Participants::where("lobby_code", $request->input("lobbyCode"))->count();
+        $team = "Team " . $team_count + 1;
         $user = Participants::create([
-            'team' => $request->input('team'),
+            'team' =>  $team,
             'members' => $request->input('members'),
             "lobby_code" => $request->input("lobbyCode"),
+            "team_leader" => $request->input("team_leader"),
+            "team_leader_email" => $request->input("team_leader_email"),
+            "subject_id" => $subject_id,
             'joined_at' => now()->toDateTimeString(),
         ]);
+
+
+        $team_id = $user->id;
+        $name =  $team;
+        $email = $request->team_leader_email;
+        $subject = "Congratulations You're invited for a quiz event";
+        $link = url("questionnaire/$id/$team_id/$subject_id");
+
+
+        Mail::to($email)->send(new EventInvitationMail($name, $email, $subject, $link));
+
 
         return response()->json([
             'message' => 'Student registered successfully',
