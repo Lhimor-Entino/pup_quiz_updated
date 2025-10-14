@@ -19,6 +19,12 @@ class Participants extends Model
         "team_leader",
         "team_leader_email",
         "is_online",
+        "student_number",
+        "course_year",
+        "contact_number",
+        "student_id",
+        "consent_form",
+        "registration_form",
     ];
 
     public function logs()

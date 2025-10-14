@@ -292,7 +292,7 @@ useEffect(() => {
                         {session.participant.team}
                       </td>
                       <td className="px-6 py-4 capitalize" >
-                        {session.participant.score}
+                        {session.total_score}
                       </td>
                       <td className="px-6 py-4 capitalize" >
                         {session.place} Place

@@ -8,6 +8,7 @@ use App\Models\Participants;
 use App\Models\PointsHistory;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -95,14 +96,14 @@ class ParticipantController extends Controller
 
         return $participants;
     }
-    public function leaderboard($id,$subject_id)
+    public function leaderboard($id, $subject_id)
     {
 
         $lobby  = Lobby::where("id", $id)->first();
 
         return Participants::where('lobby_code', $lobby->lobby_code)
             ->where('archive', 1)
-            ->where("subject_id",$subject_id)
+            ->where("subject_id", $subject_id)
             ->orderBy('score', 'desc')
             ->orderBy('created_at', 'asc') // if scores are tied, earlier entry comes first
             ->get();
@@ -177,7 +178,10 @@ class ParticipantController extends Controller
 
         $validator = Validator::make($request->all(), [
             // 'team' => 'required|string|max:255',
-            'members' => 'required|string',
+           
+            'validStudentId' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'signedConsentForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'registrationForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -197,14 +201,61 @@ class ParticipantController extends Controller
         $subject_id = $subject->id;
         $team_count = Participants::where("lobby_code", $request->input("lobbyCode"))->count();
         $team = "Team " . $team_count + 1;
+        // Store uploaded files if they exist
+        $studentIdPath = $request->hasFile('validStudentId')
+            ? $request->file('validStudentId')->store('student_ids', 'public')
+            : null;
+
+        $consentFormPath = $request->hasFile('signedConsentForm')
+            ? $request->file('signedConsentForm')->store('consent_forms', 'public')
+            : null;
+
+        $registrationFormPath = $request->hasFile('registrationForm')
+            ? $request->file('registrationForm')->store('registration_forms', 'public')
+            : null;
+
+                // 🟩 2. Process members
+    $membersData = [];
+
+    foreach ($request->input('members', []) as $index => $member) {
+        $memberFiles = [];
+
+        if ($request->hasFile("members.$index.studentId")) {
+            $memberFiles['studentId'] = $request->file("members.$index.studentId")
+                ->store('members/student_ids', 'public');
+        }
+
+        if ($request->hasFile("members.$index.registrationForm")) {
+            $memberFiles['registrationForm'] = $request->file("members.$index.registrationForm")
+                ->store('members/registration_forms', 'public');
+        }
+
+        if ($request->hasFile("members.$index.consentForm")) {
+            $memberFiles['consentForm'] = $request->file("members.$index.consentForm")
+                ->store('members/consent_forms', 'public');
+        }
+
+        $membersData[] = [
+            'name' => $member['name'] ?? '',
+            'studentNumber' => $member['studentNumber'] ?? '',
+            'courseYear' => $member['courseYear'] ?? '',
+            'requirements' => $memberFiles,
+        ];
+    }
         $user = Participants::create([
             'team' =>  $team,
-            'members' => $request->input('members'),
+           'members' => json_encode($membersData), // ✅ with file paths
             "lobby_code" => $request->input("lobbyCode"),
             "team_leader" => $request->input("team_leader"),
             "team_leader_email" => $request->input("team_leader_email"),
             "subject_id" => $subject_id,
             'joined_at' => now()->toDateTimeString(),
+            "student_number" => $request->input("studentNumber"),
+            "course_year" => $request->input("courseYear"),
+            "contact_number" => $request->input("contactNumber"),
+            "student_id" => $studentIdPath,
+            "consent_form" =>$registrationFormPath ,
+            "registration_form" => $registrationFormPath,
         ]);
 
 
@@ -213,6 +264,7 @@ class ParticipantController extends Controller
         $email = $request->team_leader_email;
         $subject = "Congratulations You're invited for a quiz event";
         $link = url("questionnaire/$id/$team_id/$subject_id");
+
 
 
         Mail::to($email)->send(new EventInvitationMail($name, $email, $subject, $link));
@@ -239,14 +291,36 @@ class ParticipantController extends Controller
         // 3. Update the score
 
 
-        if ($score >= 0 && $q_type !== "short-answer") {
-            $participant->score = $newScore;
-        }
+        // if ($score >= 0 && $q_type !== "short-answer") {
+        //     $participant->score = $newScore;
+        // }
 
         $participant->prev_answer = $prev_ans;
         $participant->prev_answer_correct = $score > 0 ? 1 : 0;
+        //
         $participant->save();
 
+        // PointsHistory::where("participant_id", $id)
+        //     ->where("lobby_id", $lobby_id)
+        //     ->where("question_id", $question_id)
+        //  ->whereDate("created_at", Carbon::today()) // compares only the date
+        //     ->delete();
+        $record = PointsHistory::where("participant_id", $id)
+            ->where("lobby_id", $lobby_id)
+            ->where("question_id", $question_id)
+            ->whereDate("created_at", Carbon::today())
+            ->first();
+
+        if ($record) {
+            $record->delete();
+            // optional: return success response
+        } else {
+
+            if ($score >= 0 && $q_type !== "short-answer") {
+                $participant->score = $newScore;
+            }
+        }
+        $participant->save();
         PointsHistory::create([
             "points" =>  $score,
             "question" =>  $question,

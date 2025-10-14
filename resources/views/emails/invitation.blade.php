@@ -128,6 +128,19 @@
             text-align: justify;
         }
 
+           .school-logo-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .school-logo-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+        }
+
         .divider {
             height: 2px;
             background: linear-gradient(90deg, #ff8c00, #ff6b35, #ff8c00);
@@ -262,6 +275,10 @@
 
             <div class="email-info">
                 <p>We sent this email to: {{ $email }}</p>
+            </div>
+
+            <div class="school-logo-container">
+                  <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
             </div>
         </div>
 

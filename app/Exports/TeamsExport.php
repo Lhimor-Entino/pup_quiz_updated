@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Lobby;
 use App\Models\Participants;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -9,14 +10,26 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class TeamsExport implements FromCollection, WithHeadings, WithMapping
 {
+
+    private $rankCounter = 0; // keep track of ranks
+    private $lobbyId;
+    private $event;
+    public function __construct($lobbyId)
+    {
+        $this->lobbyId = $lobbyId;
+    }
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * 
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
-        // Fetch all teams with their members.
-        // Adjust 'members' relationship if it's named differently in your Team model.
-        return Participants::all(); // Or Team::with('members')->get(); if members are related
+        $lobby = Lobby::where('id', $this->lobbyId)->first();
+        $this->event = $lobby->name;
+        return Participants::where("lobby_code", $lobby->lobby_code)
+        ->where("archive",1)
+            ->orderBy('score', 'desc')
+            ->get(); // Or Team::with('members')->get(); if members are related
     }
 
     /**
@@ -25,14 +38,13 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'ID',
-            'Team Name',
-            'Previous Answer Correct',
-            'Members',
-            'Score',
+            'Quiz Event',
             'Lobby Code',
-            'Created At',
-            'Updated At',
+            'Rank',
+            'Team Name',
+            'Participants Score',
+            'Date & Time of Quiz',
+
         ];
     }
 
@@ -44,20 +56,16 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping
     {
         // Decode the members JSON string into an array of member objects
         $members = json_decode($team->members, true);
+        // Increment rank counter each time map() is called
+        $this->rankCounter++;
 
-        // Extract just the names for the Excel column
-        $memberNames = collect($members)->map(function ($member) {
-            return $member['name'];
-        })->implode(', '); // Join names with a comma and space
 
         return [
-            $team->id,
-            $team->team,
-            $team->prev_answer_correct,
-            $memberNames, // Display comma-separated member names
-            $team->score,
+            $this->event,
             $team->lobby_code,
-            $team->created_at,
+            $this->rankCounter,
+            $team->team,
+            $team->score,
             $team->updated_at,
         ];
     }

@@ -54,7 +54,7 @@ class LobbyController extends Controller
     {
         $lobby = Lobby::where('lobby_code', $code)->firstOrFail();
 
-        $subject = Subjects::where('lobby_id', $lobby->id)->get();
+        $subject = Subjects::where('lobby_id', $lobby->id)->with("lobby")->get();
 
         return $subject;
     }

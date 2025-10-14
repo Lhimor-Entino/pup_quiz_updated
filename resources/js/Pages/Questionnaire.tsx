@@ -67,65 +67,65 @@ const Questionnaire = () => {
     }
   ];
 
-  const enterFullscreen = () => {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    }
-  };
+  // const enterFullscreen = () => {
+  //   const elem = document.documentElement;
+  //   if (elem.requestFullscreen) {
+  //     elem.requestFullscreen();
+  //   }
+  // };
 
-  useEffect(() => {
-    // First gesture (click/tap) triggers fullscreen
-    const handleFirstClick = () => {
-      enterFullscreen();
-      document.removeEventListener("click", handleFirstClick);
-    };
-    document.addEventListener("click", handleFirstClick);
+  // useEffect(() => {
+  //   // First gesture (click/tap) triggers fullscreen
+  //   const handleFirstClick = () => {
+  //     enterFullscreen();
+  //     document.removeEventListener("click", handleFirstClick);
+  //   };
+  //   document.addEventListener("click", handleFirstClick);
 
-    // If user exits fullscreen (Esc, F11, resize) → force back
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
-        enterFullscreen();
-      }
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+  //   // If user exits fullscreen (Esc, F11, resize) → force back
+  //   const handleFullscreenChange = () => {
+  //     if (!document.fullscreenElement) {
+  //       enterFullscreen();
+  //     }
+  //   };
+  //   document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-    // Extra check on resize
-    const handleResize = () => {
-      if (!document.fullscreenElement) {
-        enterFullscreen();
-      }
-    };
-    window.addEventListener("resize", handleResize);
+  //   // Extra check on resize
+  //   const handleResize = () => {
+  //     if (!document.fullscreenElement) {
+  //       enterFullscreen();
+  //     }
+  //   };
+  //   window.addEventListener("resize", handleResize);
 
-    return () => {
-      document.removeEventListener("click", handleFirstClick);
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  //   return () => {
+  //     document.removeEventListener("click", handleFirstClick);
+  //     document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
 
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      console.log("Current active element:", document.activeElement);
-      if (e.key === "F11") {
-        e.preventDefault(); // Stop fullscreen toggle
-        e.stopPropagation();
-        document.body.focus();
-        // alert("F11 is disabled!");
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();  // stop default action
-        e.stopPropagation(); // stop bubbling
-        document.body.focus();
-        alert("Escape is disabled!");
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     console.log("Current active element:", document.activeElement);
+  //     if (e.key === "F11") {
+  //       e.preventDefault(); // Stop fullscreen toggle
+  //       e.stopPropagation();
+  //       document.body.focus();
+  //       // alert("F11 is disabled!");
+  //     }
+  //     if (e.key === "Escape") {
+  //       e.preventDefault();  // stop default action
+  //       e.stopPropagation(); // stop bubbling
+  //       document.body.focus();
+  //       alert("Escape is disabled!");
+  //     }
+  //   };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  //   window.addEventListener("keydown", handleKeyDown);
+  //   return () => window.removeEventListener("keydown", handleKeyDown);
+  // }, []);
 
 
   const handleLevelSelect = (level) => {
@@ -537,7 +537,8 @@ const Questionnaire = () => {
     try {
       // Make the GET request. Crucially, set responseType to 'blob'
       // This tells axios to expect binary data and return it as a Blob object.
-      const response = await axios.get('/report/teams/excel', {
+      
+      const response = await axios.get(`/report/teams/excel/${id}`, {
         responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
       });
 

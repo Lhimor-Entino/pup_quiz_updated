@@ -501,7 +501,7 @@ Route::get('/participant-code-update/{id}/{code}', [ParticipantController::class
 Route::get('/participant-shor-answer/{id}', [ParticipantController::class, 'shortAnswer'])->name('participant-shor-answer');
 Route::post('/participant-answer-update', [ParticipantController::class, 'updateAns'])->name('participant-shor-answer');
 
-Route::get('/report/teams/excel', [ReportController::class, 'downloadTeamsReport']);
+Route::get('/report/teams/excel/{lobby_id}', [ReportController::class, 'downloadTeamsReport']);
 
 
 
