@@ -6,9 +6,11 @@ use App\Mail\EventInvitationMail;
 use App\Models\Lobby;
 use App\Models\Participants;
 use App\Models\PointsHistory;
+use App\Models\PreRegistration;
 use App\Models\SubjectQuestion;
 use App\Models\Subjects;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -102,7 +104,7 @@ class ParticipantController extends Controller
         $lobby  = Lobby::where("id", $id)->first();
 
         return Participants::where('lobby_code', $lobby->lobby_code)
-            ->where('archive', 1)
+            // ->where('archive', 1)
             ->where("subject_id", $subject_id)
             ->orderBy('score', 'desc')
             ->orderBy('created_at', 'asc') // if scores are tied, earlier entry comes first
@@ -133,6 +135,59 @@ class ParticipantController extends Controller
 
     //     return $history;
     // }
+
+    public function managePreRegistration(Request $request)
+    {
+
+        try {
+
+            $participant_exist = Participants::find($request->participant_id);
+
+            if (!$participant_exist) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Participant not found.',
+                ], 404);
+            }
+
+            // Example insert (replace with your actual model and logic)
+            $participant = PreRegistration::create([
+                'status' => $request->status,
+                'participant_id' => $request->participant_id,
+                'lobby_id' => $request->lobby_id,
+                'comment' => $request->comment
+
+            ]);
+
+            $participant = Participants::where("id", $request->participant_id)->first();
+
+            $participant->is_approved = $request->status == 1 ? 1 : 2; // 2 IS APPROVED
+            $participant->save();
+
+
+            $subject = Subjects::where("lobby_id", $request->lobby_id)->first();
+            $subject_id =  $participant->subject_id;
+
+            $link = $request->status == 1 ? "#" : url("questionnaire/$request->lobby_id/$request->participant_id/$subject_id");
+            $subject = $request->status == 1 ? "We regret to inform you that your registration has been declined." : "Congratulations You're invited for a quiz event";
+
+            Mail::to($participant->team_leader_email)->send(new EventInvitationMail($participant->team, $participant->team_leader_email, $subject, $link));
+
+            // Return success response
+            return response()->json([
+                'success' => true,
+                'message' => $request->status == 1 ?  'Pre-registration rejected!' : 'Pre-registration approved!',
+                'data' => $participant,
+            ], 201); // 201 = Created
+        } catch (\Exception $e) {
+            // Return error response if something goes wrong
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong during registration.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
     public function currentQuestionLeaderboard($id, $question_id)
     {
 
@@ -172,13 +227,21 @@ class ParticipantController extends Controller
             ->get();
         return $teams;
     }
+
+    function moveFileToPublic($file, $folder)
+    {
+        $fileName = $file->hashName();
+        $file->move(public_path("storage/$folder"), $fileName);
+        return "$folder/$fileName";
+    }
+
     public function store(Request $request)
     {
         //
 
         $validator = Validator::make($request->all(), [
             // 'team' => 'required|string|max:255',
-           
+
             'validStudentId' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'signedConsentForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'registrationForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -203,58 +266,66 @@ class ParticipantController extends Controller
         $team = "Team " . $team_count + 1;
         // Store uploaded files if they exist
         $studentIdPath = $request->hasFile('validStudentId')
-            ? $request->file('validStudentId')->store('student_ids', 'public')
+            ? $this->moveFileToPublic($request->file('validStudentId'), 'student_ids')
             : null;
 
         $consentFormPath = $request->hasFile('signedConsentForm')
-            ? $request->file('signedConsentForm')->store('consent_forms', 'public')
+            ?  $this->moveFileToPublic($request->file('signedConsentForm'), 'consent_forms')
             : null;
 
         $registrationFormPath = $request->hasFile('registrationForm')
-            ? $request->file('registrationForm')->store('registration_forms', 'public')
+            ?  $this->moveFileToPublic($request->file('registrationForm'), 'registration_forms')
             : null;
 
-                // 🟩 2. Process members
-    $membersData = [];
+        // Process members
+        $membersData = [];
 
-    foreach ($request->input('members', []) as $index => $member) {
-        $memberFiles = [];
+        foreach ($request->input('members', []) as $index => $member) {
+            $memberFiles = [];
 
-        if ($request->hasFile("members.$index.studentId")) {
-            $memberFiles['studentId'] = $request->file("members.$index.studentId")
-                ->store('members/student_ids', 'public');
+            if ($request->hasFile("members.$index.studentId")) {
+                $memberFiles['studentId'] =  $this->moveFileToPublic(
+                    $request->file("members.$index.studentId"),
+                    'members/student_ids'
+                );
+            }
+
+            if ($request->hasFile("members.$index.registrationForm")) {
+                $memberFiles['registrationForm'] =  $this->moveFileToPublic(
+                    $request->file("members.$index.registrationForm"),
+                    'members/registration_forms'
+                );
+            }
+
+            if ($request->hasFile("members.$index.consentForm")) {
+                $memberFiles['consentForm'] =  $this->moveFileToPublic(
+                    $request->file("members.$index.consentForm"),
+                    'members/consent_forms'
+                );
+            }
+
+            $membersData[] = [
+                'name' => $member['name'] ?? '',
+                'studentNumber' => $member['studentNumber'] ?? '',
+                'courseYear' => $member['courseYear'] ?? '',
+                'requirements' => $memberFiles,
+            ];
         }
 
-        if ($request->hasFile("members.$index.registrationForm")) {
-            $memberFiles['registrationForm'] = $request->file("members.$index.registrationForm")
-                ->store('members/registration_forms', 'public');
-        }
 
-        if ($request->hasFile("members.$index.consentForm")) {
-            $memberFiles['consentForm'] = $request->file("members.$index.consentForm")
-                ->store('members/consent_forms', 'public');
-        }
-
-        $membersData[] = [
-            'name' => $member['name'] ?? '',
-            'studentNumber' => $member['studentNumber'] ?? '',
-            'courseYear' => $member['courseYear'] ?? '',
-            'requirements' => $memberFiles,
-        ];
-    }
         $user = Participants::create([
             'team' =>  $team,
-           'members' => json_encode($membersData), // ✅ with file paths
+            'members' => json_encode($membersData), // ✅ with file paths
             "lobby_code" => $request->input("lobbyCode"),
             "team_leader" => $request->input("team_leader"),
             "team_leader_email" => $request->input("team_leader_email"),
-            "subject_id" => $subject_id,
+            "subject_id" =>  $subject_id,
             'joined_at' => now()->toDateTimeString(),
             "student_number" => $request->input("studentNumber"),
             "course_year" => $request->input("courseYear"),
             "contact_number" => $request->input("contactNumber"),
             "student_id" => $studentIdPath,
-            "consent_form" =>$registrationFormPath ,
+            "consent_form" => $registrationFormPath,
             "registration_form" => $registrationFormPath,
         ]);
 
@@ -267,7 +338,7 @@ class ParticipantController extends Controller
 
 
 
-        Mail::to($email)->send(new EventInvitationMail($name, $email, $subject, $link));
+        // Mail::to($email)->send(new EventInvitationMail($name, $email, $subject, $link));
 
 
         return response()->json([
@@ -278,64 +349,118 @@ class ParticipantController extends Controller
     }
 
 
-    public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id, $q_type)
+    public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id, $q_type, $prev_score_ui, $new_question)
     {
 
-
-        // 1. Find the participant or fail
-        $participant = Participants::where("id", $id)->firstOrFail();
-
-        // 2. Add the new score to the existing one
-        $newScore = $participant->score + $score;
-        $prev_ans = $ans;
-        // 3. Update the score
+        try {
 
 
-        // if ($score >= 0 && $q_type !== "short-answer") {
-        //     $participant->score = $newScore;
-        // }
+            // 1. Find the participant or fail
+            $participant = Participants::where("id", $id)->firstOrFail();
+            $sub_question = SubjectQuestion::where("id", $question_id)->first();
+            $c_lobby = Lobby::where("id", $lobby_id)->first();
+            // 2. Add the new score to the existing one
+            $newScore = $participant->score + $score;
+            $prev_score = $prev_score_ui == 0 ? $participant->score : $prev_score_ui;
+            $d = "no";
+            // if ($c_lobby->question_num == $curr_item) {
+            if ($participant->prev_answer_correct == 1 && $score <= 0) {
 
-        $participant->prev_answer = $prev_ans;
-        $participant->prev_answer_correct = $score > 0 ? 1 : 0;
-        //
-        $participant->save();
+                if ($participant->score <= 0) {
+                    $newScore = 0;
+                    $d = "s" . $newScore;
+                    $prev_score = $prev_score_ui;
+                } else {
+                    $newScore  =  $participant->score  - $sub_question->points;
+                    $d = "swww" . $newScore;
+                    $prev_score =   $prev_score_ui;
+                }
+                 $prev_score =  $newScore;
+            } else {
+                $newScore = $new_question == "yes" ? $score + $prev_score_ui : $participant->score + $score;
+                $prev_score = $participant->score;
+                $d = "YEs" . $score;
+                // dd("Previous Score 1:", $prev_score);
 
-        // PointsHistory::where("participant_id", $id)
-        //     ->where("lobby_id", $lobby_id)
-        //     ->where("question_id", $question_id)
-        //  ->whereDate("created_at", Carbon::today()) // compares only the date
-        //     ->delete();
-        $record = PointsHistory::where("participant_id", $id)
-            ->where("lobby_id", $lobby_id)
-            ->where("question_id", $question_id)
-            ->whereDate("created_at", Carbon::today())
-            ->first();
+            }
+            // }else{
+            //       $d = "YEs else" . $newScore;
+            // }
+            $prev_ans = $ans;
+            // 3. Update the score
 
-        if ($record) {
-            $record->delete();
-            // optional: return success response
-        } else {
 
             if ($score >= 0 && $q_type !== "short-answer") {
                 $participant->score = $newScore;
+                $prev_score = $newScore;
+                // dd("Previous Score 2:", $prev_score);
+
             }
+
+            // if($score <=0 ){
+            //       $prev_score = intval($prev_score_ui);
+            // }
+            $participant->prev_answer = $prev_ans;
+            $participant->prev_answer_correct = $score > 0 ? 1 : 0;
+            //
+            $participant->save();
+
+            // PointsHistory::where("participant_id", $id)
+            //     ->where("lobby_id", $lobby_id)
+            //     ->where("question_id", $question_id)
+            //  ->whereDate("created_at", Carbon::today()) // compares only the date
+            //     ->delete();
+            $record = PointsHistory::where("participant_id", $id)
+                ->where("lobby_id", $lobby_id)
+                ->where("question_id", $question_id)
+                ->whereDate("created_at", Carbon::today())
+                ->first();
+
+            if ($record) {
+                $record->delete();
+                // optional: return success response
+            } else {
+
+                if ($score >= 0 && $q_type !== "short-answer") {
+                    $participant->score = $newScore;
+                }
+            }
+            $participant->save();
+            PointsHistory::create([
+                "points" =>  $score,
+                "question" =>  $question,
+                "answer" => $ans,
+                "participant_id" => $id,
+                'lobby_id' =>  $lobby_id,
+                'question_id' => $question_id
+            ]);
+
+
+            // 4. Optional: return a response
+            return response()->json([
+                'message' => 'Score updated successfully.',
+                'new_score' => $participant->score,
+                'updated_score' => $newScore,
+                'prev_score' => $prev_score,
+                'cl' => $c_lobby->question_num,
+
+                '$d' => $d
+            ]);
+        } catch (QueryException $e) {
+            // Catch database query errors (SQL, constraint violations, etc.)
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error occurred.',
+                'error' => $e->getMessage(), // optional: remove in production
+            ], 500);
+        } catch (\Exception $e) {
+            // Catch any other general errors
+            return response()->json([
+                'success' => false,
+                'message' => 'Unexpected error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        $participant->save();
-        PointsHistory::create([
-            "points" =>  $score,
-            "question" =>  $question,
-            "answer" => $ans,
-            "participant_id" => $id,
-            'lobby_id' =>  $lobby_id,
-            'question_id' => $question_id
-        ]);
-
-
-        // 4. Optional: return a response
-        return response()->json([
-            'message' => 'Score updated successfully.',
-            'new_score' => $participant->score,
-        ]);
     }
     /**
      * Display the specified resource.

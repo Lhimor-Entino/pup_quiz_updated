@@ -98,6 +98,11 @@ export default function Authenticated({ header, children, }) {
                             className: "text-red-600",
                             children: "Question Statistics",
                           }),
+                            _jsx(ResponsiveNavLink, {
+                            href: "/pre-registration",
+                            className: "text-red-600",
+                            children: "Pre Registration Logs",
+                          }),
                         ],
                       }),
               }),
@@ -123,12 +128,13 @@ export default function Authenticated({ header, children, }) {
               "fixed top-0 left-0 right-0 h-16 px-4 bg-yellow-200 shadow z-30 flex items-center justify-between",
             children: [
               _jsx("button", {
-                onClick: () => setSidebarOpen(!sidebarOpen),
+                onClick: () =>  {!user ? {} :setSidebarOpen(!sidebarOpen) },
                 className: "focus:outline-none",
                 children: _jsx("img", {
                   src: "/images/carousel/logooo.png",
                   alt: "Menu",
                   className: "h-14 w-14",
+                 
                 }),
               }),
               _jsx("div", {

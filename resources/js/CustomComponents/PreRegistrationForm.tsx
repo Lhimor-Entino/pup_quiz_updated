@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import Checkbox from '@/Components/Checkbox';
 
 export default function PreRegistrationForm() {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [submitError, setSubmitError] = useState('');
@@ -102,13 +102,15 @@ export default function PreRegistrationForm() {
         setFormDataDoc({ ...formDataDoc, [e.target.name]: e.target.checked });
     };
     const handleSubmit = async () => {
+//         alert(JSON.stringify(formData.signedConsentForm))
+// return
         if (!csrfToken) {
             console.error("CSRF token not found");
             return;
         }
 
-        setIsSubmitting(true);
-        setSubmitError("");
+        // setIsSubmitting(true);
+        // setSubmitError("");
 
         try {
             const formDataToSend = new FormData();
@@ -124,12 +126,13 @@ export default function PreRegistrationForm() {
             formDataToSend.append("lobbyCode", lobbyCode);
 
             // 🔹 Team leader’s files
-            if (formData.validStudentId)
-                formDataToSend.append("validStudentId", formData.validStudentId);
-            if (formData.registrationForm)
-                formDataToSend.append("registrationForm", formData.registrationForm);
-            if (formData.signedConsentForm)
-                formDataToSend.append("signedConsentForm", formData.signedConsentForm);
+
+            if (formDataDoc.studentId)
+                formDataToSend.append("validStudentId", formDataDoc.studentId);
+            if (formDataDoc.registrationForm)
+                formDataToSend.append("registrationForm", formDataDoc.registrationForm);
+            if (formDataDoc.consentForm)
+                formDataToSend.append("signedConsentForm", formDataDoc.consentForm);
 
             // 🔹 Members (loop through each)
             formData.members.forEach((member, index) => {

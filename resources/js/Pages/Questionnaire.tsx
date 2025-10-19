@@ -187,9 +187,13 @@ const Questionnaire = () => {
         }
 
       }
+      const prev_score = localStorage.getItem("prev_score")
+      const new_question = localStorage.getItem("new_question")
+      const res = await axios.get(`/updateScore/${team_id}/${score}/${ans}/${currentQuestion['question']}/${id}/${currentQuestion['id']}/${currentQuestion['type']}/${prev_score}/${new_question}`)
 
-      await axios.get(`/updateScore/${team_id}/${score}/${ans}/${currentQuestion['question']}/${id}/${currentQuestion['id']}/${currentQuestion['type']}`)
-
+      if(res.data){
+        localStorage.setItem('prev_score',res.data.prev_score)
+      }
       sumbmitAlert()
 
     } catch (error) {
@@ -248,7 +252,7 @@ const Questionnaire = () => {
   }
   const handleRevealLeaderboard = async () => {
 
-
+   
     setLoading(true)
     try {
       await axios.get(`/lobby-revealLeaderboard/${id}/${subject_id}/${items}`)
@@ -345,6 +349,7 @@ const Questionnaire = () => {
         });
         setSelectedOption(null)
         setSelectedLevel(null)
+        localStorage.setItem("new_question","yes")
       }
       console.log(response)
     } catch (error) {
@@ -369,6 +374,7 @@ const Questionnaire = () => {
   }
 
   const submitAnswer = (option) => {
+
 
 
     if (auth.user) return;
@@ -433,6 +439,7 @@ const Questionnaire = () => {
           iconColor: '#399918 ',
         });
       }
+      
     } catch (error) {
       console.log(error)
     } finally {
@@ -441,9 +448,10 @@ const Questionnaire = () => {
   }
 
   const getLeaderboard = async () => {
+
     try {
       const response = await axios.get(`/leaderboard/${id}/${subject_id}`)
-
+ 
       setLeaderboard(response.data)
     } catch (error) {
       console.log(error)
@@ -657,7 +665,9 @@ const Questionnaire = () => {
 
   }
   useEffect(() => {
-
+    // if(state =="answer-revealed"){
+    //   alert("Save Answer")
+    // }
     if (state == 'leaderboard-revealed' || state == "finished") {
 
       getCurrentQuestionLeaderboard()
@@ -705,14 +715,24 @@ const Questionnaire = () => {
 
   useEffect(() => {
     if (currentQuestion) {
+     
       setSeconds(currentQuestion['timeLimit'])
       setLevel(currentQuestion['difficulty'])
       setShortAnswerSubmitted(false)
       setParticapantShortAns([])
+      if(itemNumber as number <= 1){
+          localStorage.setItem("new_question","no")
+            //  localStorage.setItem("prev_score","0")
+      }else{
+      localStorage.setItem("new_question","yes")
+      }
+
     }
 
 
   }, [currentQuestion])
+
+
   useEffect(() => {
     if (!currentQuestion) return
     if (currentQuestion['type'] == 'short-answer' && auth?.user && seconds == 0 && state == 'timer-started') {
@@ -769,6 +789,7 @@ const Questionnaire = () => {
   useEffect(() => {
     if (state == "switch-new-level") {
       getNewLevel()
+      
     }
 
   }, [state, level])

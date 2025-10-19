@@ -24,4 +24,8 @@ class Lobby extends Model
     {
         return $this->hasMany(LoobyManagement::class);
     }
+     public function pre_registration_log()
+    {
+        return $this->hasMany(PreRegistration::class);
+    }
 }

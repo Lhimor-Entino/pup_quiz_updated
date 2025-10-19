@@ -23,6 +23,7 @@ use App\Models\LeaderboardLog;
 use App\Models\Lobby;
 use App\Models\LoobyManagement;
 use App\Models\Participants;
+use App\Models\PreRegistration;
 use App\Models\QuizManagement;
 use App\Models\SessionLogs;
 use App\Models\SubjectQuestion;
@@ -171,6 +172,32 @@ Route::get('/host', function () {
 Route::get('/category', function () {
     return Inertia::render('Category');
 })->name('category');
+Route::get('/pre-registration', function () {
+
+    try {
+        $logs =  PreRegistration::with('lobby','participant')->get();
+    } catch (\Exception $e) {
+        // Return error response if something goes wrong
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong during registration.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+    return Inertia::render('PreRegistrationLogs', [
+        "logs" => $logs
+    ]);
+})->name('pre-registration');
+Route::get('/manage-pre-registration/{lobby_code}', function ($lobby_code) {
+    $pre_registration =  Participants::where("lobby_code", $lobby_code)->where('is_approved', 0)->get();
+    $lobby =  Lobby::where("lobby_code", $lobby_code)->first();
+    return Inertia::render('ManagePreRegistration', [
+        "lobby" => $lobby,
+        "pre_registration" => $pre_registration
+    ]);
+})->name('manage-pre-registration');
+
+Route::post('/manage-pre-registration', [ParticipantController::class, "managePreRegistration"])->name('manage-pre-registration');
 // Route::get('/lobby/{id}/{subject_id}/{team_id}', function ($id, $subject_id,$team_id) {
 //     $subject = Subjects::where('id', $subject_id)
 //     ->get();
@@ -199,6 +226,7 @@ Route::get('/lobbyCategory/{id}', function ($lobbyCode) {
 
 
 
+
 Route::get('/subjectQuestionForm/{subjectId}', function ($subjectId) {
 
 
@@ -208,7 +236,9 @@ Route::get('/subjectQuestionForm/{subjectId}', function ($subjectId) {
 
     return Inertia::render('SubjectQuestionForm', [
         'subject_questions' => $questions,
-        'subjectId' => $subjectId
+        'subjectId' => $subjectId,
+
+
     ]);
 })->name('subjectQuestionForm');
 
@@ -370,20 +400,20 @@ Route::get('/questionnaire/{id}/{team_id}/{subject_id}', function ($id, $team_id
     $subject = Subjects::where("id", $subject_id)->first();
     $now = Carbon::now();
     if ($subject) {
-      $start = Carbon::parse($subject->start_date);
+        $start = Carbon::parse($subject->start_date);
         if ($now->lessThan($start)) {
-        $diff = $now->diff($start); // DateInterval object
+            $diff = $now->diff($start); // DateInterval object
 
-        $days = $diff->d;
-        $hours = $diff->h;
-        $minutes = $diff->i;
+            $days = $diff->d;
+            $hours = $diff->h;
+            $minutes = $diff->i;
 
-        $message = "Event will start in {$days}d {$hours}h {$minutes}m";
+            $message = "Event will start in {$days}d {$hours}h {$minutes}m";
 
-        return Inertia::render("EventReminder", [
-            "msg" => $message
-        ]);
-    }
+            return Inertia::render("EventReminder", [
+                "msg" => $message
+            ]);
+        }
     }
     // $lobby = Lobby::findOrFail($id);
     $lobby = Lobby::where("id", $id)
@@ -483,6 +513,7 @@ Route::post('/lobby/{id}', [LobbyController::class, 'update'])->name('lobby.upda
 Route::post('/lobby/{id}/delete', [LobbyController::class, 'destroy'])->name('lobby.destroy');
 
 Route::post('/close-event/{id}/{subject_id}', [QuizEventController::class, 'closeEvent'])->name('close-event');
+Route::get('/clear-prev-data/{id}/{subject_id}', [QuizEventController::class, 'clearPrevData'])->name('clear-prev-data');
 
 
 Route::post('/subject', [SubjectController::class, 'store'])->name('subject.store');
@@ -494,7 +525,7 @@ Route::get('/organizer-lobbies', [LobbyController::class, 'getOrganizerLobby'])-
 Route::get('/lobby-status/{id}', [LobbyController::class, 'lobbyStatus'])->name('lobbyStatus');
 Route::post('/add-subject-quiz', [SubjectQuestionController::class, 'store'])->name('add-subject-quiz');
 Route::get('/getLobbyQuestion/{lobby_id}/{subject_id}', [SubjectQuestionController::class, 'getLobbyQuestion'])->name('getLobbyQuestion');
-Route::get('/updateScore/{id}/{score}/{ans}/{question}/{lobby_id}/{question_id}/{q_type}', [ParticipantController::class, 'updateScore'])->name('updateScore');
+Route::get('/updateScore/{id}/{score}/{ans}/{question}/{lobby_id}/{question_id}/{q_type}/{prev_score}/{new_question}', [ParticipantController::class, 'updateScore'])->name('updateScore');
 Route::get('/leaderboard/{id}/{subject_id}', [ParticipantController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/currentQuestionLeaderboard/{id}/{question_id}', [ParticipantController::class, 'currentQuestionLeaderboard'])->name('currentQuestionLeaderboard');
 Route::get('/participant-code-update/{id}/{code}', [ParticipantController::class, 'updateTeamCode'])->name('participant-code-update');

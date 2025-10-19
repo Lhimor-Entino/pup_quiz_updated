@@ -25,10 +25,15 @@ class Participants extends Model
         "student_id",
         "consent_form",
         "registration_form",
+        "subject_id"
     ];
 
     public function logs()
     {
         return $this->hasMany(LeaderboardLog::class, 'participant_id', 'id');
+    }
+        public function pre_registration()
+    {
+        return $this->hasMany(PreRegistration::class, 'participant_id', 'id');
     }
 }

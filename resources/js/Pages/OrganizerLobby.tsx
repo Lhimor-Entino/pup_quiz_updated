@@ -64,37 +64,37 @@ const OrganizerLobby = (props: Props) => {
             }
         });
     };
-  const handleDelete = (id: string) => {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "This action cannot be undone!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            router.post(`/lobby/${id}/delete`, {}, {
-                onSuccess: () => {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: 'Lobby Deleted',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        background: '#fff',
-                        color: '#399918',
-                        iconColor: '#399918',
-                    });
-                }
-            });
-        }
-    });
-};
+    const handleDelete = (id: string) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.post(`/lobby/${id}/delete`, {}, {
+                    onSuccess: () => {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Lobby Deleted',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            background: '#fff',
+                            color: '#399918',
+                            iconColor: '#399918',
+                        });
+                    }
+                });
+            }
+        });
+    };
     const handleEditClick = (lobby: any) => {
         setEditingLobby(lobby);
         setEditData('name', lobby.name);
@@ -115,7 +115,7 @@ const OrganizerLobby = (props: Props) => {
     }
 
     const handleClickCategory = (code: string) => {
-     
+
         router.get(`lobbyCategory/${code}`)
     }
     useEffect(() => {
@@ -274,6 +274,22 @@ const OrganizerLobby = (props: Props) => {
                                                         {al.name}
                                                     </CardTitle>
                                                     <div className="flex space-x-1 flex-shrink-0">
+                                                        {/* Pre-Registration Button */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.get(`/manage-pre-registration/${al.lobby_code}`)
+                                                                // Add pre-registration functionality
+                                                                // handlePreRegistration(al.id);
+                                                            }}
+                                                            className="p-2 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 transition-colors duration-200"
+                                                            title="Pre-registration"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                                            </svg>
+                                                        </button>
+
                                                         {/* Copy Code Button */}
                                                         <button
                                                             onClick={(e) => {
@@ -321,9 +337,9 @@ const OrganizerLobby = (props: Props) => {
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 // Add delete functionality
-                                                              
-                                                                    handleDelete(al.id)
-                                                                
+
+                                                                handleDelete(al.id)
+
                                                             }}
                                                             className="p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 transition-colors duration-200"
                                                             title="Delete lobby"
@@ -478,7 +494,7 @@ const OrganizerLobby = (props: Props) => {
                                                 </svg>
                                                 Easy Management
                                             </div>
-                                     
+
                                         </div>
                                     </div>
                                 </div>

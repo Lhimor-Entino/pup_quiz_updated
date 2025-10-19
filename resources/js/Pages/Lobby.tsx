@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Clock, Star, Trophy, User, Users } from 'lucide-react';
+import LeaderboardModal from '@/CustomComponents/LeaderboardModal';
 type Props = {
   quizTitle?: string;
   subject?: string;
@@ -27,6 +28,8 @@ const Lobby = () => {
   const [loading, setLoading] = useState(false)
   const [state, setState] = useState<string | null>(null);
   const [hoveredTeam, setHoveredTeam] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([])
+  const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
     const channel = window.Echo.channel('quiz-room_' + id);
     console.log(channel)
@@ -70,6 +73,7 @@ const Lobby = () => {
   const handleStartQuiz = async () => {
     setLoading(true)
     try {
+       await axios.get(`/clear-prev-data/${id}/${subject_id}`)
       const response = await axios.get(`/lobby-start/${id}`)
 
       if (response.data == 1) {
@@ -104,7 +108,16 @@ const Lobby = () => {
     // cleanup when leaving the page / component unmounts
     return () => clearInterval(interval);
   }, []);
+  const getLeaderboard = async () => {
+    try {
+      const response = await axios.get(`/leaderboard/${id}/${subject_id}`)
 
+      setLeaderboard(response.data)
+      setIsModalOpen(true)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
     <AuthenticatedLayout>
       <Head title="Event Rooms Lobby" />
@@ -276,7 +289,24 @@ const Lobby = () => {
                 </div>
               </button>
             </div>
+
+
           )}
+          <div className='flex justify-center mt-10'>
+            <Button onClick={() => getLeaderboard()} className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
+              Show Leaderboard
+            </Button>
+          </div>
+
+          <LeaderboardModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            leaderboard={leaderboard}
+            team_id={1}
+            state="over-all-leaderboard"
+            currentQuestion={{ points: 10 }}
+          />
+
         </div>
       </div>
     </AuthenticatedLayout>

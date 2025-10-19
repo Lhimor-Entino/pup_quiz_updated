@@ -55,94 +55,59 @@ const LeaderboardModal = ({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full border-separate border-spacing-y-3">
-              <thead>
-                <tr>
-                  <th className="text-left text-orange-700 font-semibold pb-2">
-                    Rank & Team
-                  </th>
-                  <th className="text-left text-orange-700 font-semibold pb-2">
-                    Total Points
-                  </th>
-                  <th className="text-right text-orange-700 font-semibold pb-2">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((rank, index) => (
-                  <tr
-                    key={rank.rank}
-                    className={`${
-                      rank.id == team_id
-                        ? 'bg-orange-500/50 rounded-md hover:bg-orange-500/50'
-                        : 'hover:bg-orange-200/50'
-                    } transition-colors duration-200`}
-                  >
-                    <td className="py-2">
-                      <div className="flex items-center gap-x-4">
-                        <div className="text-xl font-bold py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-md shadow-orange-200">
-                          <span className="text-white">{index + 1}</span>
-                        </div>
-                        <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                          <span className="text-orange-900">{rank.team}</span>
-                        </div>
-                      </div>
-                    </td>
+<table className="w-full border-separate border-spacing-y-3">
+  <thead>
+    <tr>
+      <th className="text-left text-orange-700 font-semibold pb-2 w-auto">
+        Rank & Team
+      </th>
+      <th className="text-left text-orange-700 font-semibold pb-2 w-32">
+        Total Points
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {leaderboard.map((rank, index) => {
+      // Calculate score based on state and previous answer
+      let displayScore;
+      if (state !== 'over-all-leaderboard') {
+        displayScore = rank.prev_answer_correct === 1 
+          ? (currentQuestion?.points || 0)
+          : 0;
+      } else {
+        displayScore = rank.score <= 0 ? 0 : rank.score;
+      }
 
-                    <td className="py-2">
-                      <div className="text-xl font-bold py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
-                        {rank.prev_answer_correct == 1
-                          ? state != 'over-all-leaderboard'
-                            ? currentQuestion
-                              ? currentQuestion['points']
-                              : ''
-                            : rank.score <= 0
-                            ? 0
-                            : rank.score
-                          : state != 'over-all-leaderboard'
-                          ? 0
-                          : rank.score}
-                      </div>
-                    </td>
+      return (
+        <tr
+          key={rank.rank}
+          className={`${
+            rank.id === team_id
+              ? 'bg-orange-500/50 rounded-md hover:bg-orange-500/50'
+              : 'hover:bg-orange-200/50'
+          } transition-colors duration-200`}
+        >
+          <td className="py-2 w-auto">
+            <div className="flex items-center gap-x-4">
+              <div className="text-xl font-bold py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-md shadow-orange-200">
+                <span className="text-white">{index + 1}</span>
+              </div>
+              <div className="text-xl font-bold py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                <span className="text-orange-900">{rank.team}</span>
+              </div>
+            </div>
+          </td>
 
-                    <td className="py-2 text-right">
-                      <div
-                        className={`text-xl font-bold py-2 px-4 ${
-                          rank.prev_answer_correct == 1
-                            ? 'bg-gradient-to-r from-green-500 to-green-600'
-                            : 'bg-gradient-to-r from-orange-600 to-orange-700'
-                        } rounded-lg shadow-md ${
-                          rank.prev_answer_correct == 1
-                            ? 'shadow-green-200'
-                            : 'shadow-orange-200'
-                        }`}
-                      >
-                        <div className="flex gap-x-2 items-center justify-center text-white">
-                          {rank.prev_answer_correct == 1 ? (
-                            <>
-                              <CheckCheck className="h-5 w-5" />
-                              <span>Correct</span>
-                            </>
-                          ) : rank.prev_answer?.trim() == '--' ||
-                            rank.prev_answer?.trim() == '' ? (
-                            <>
-                              <X className="h-5 w-5" />
-                              <span className="text-center">No Answer</span>
-                            </>
-                          ) : (
-                            <>
-                              <X className="h-5 w-5" />
-                              <span>Incorrect</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <td className="py-2 w-32">
+            <div className="text-xl font-bold py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-orange-900">
+              {displayScore}
+            </div>
+          </td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
           </div>
         </div>
       </div>

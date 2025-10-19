@@ -128,7 +128,7 @@
             text-align: justify;
         }
 
-           .school-logo-container {
+        .school-logo-container {
             width: 100%;
             margin-top: 20px;
         }
@@ -257,20 +257,25 @@
 
         <div class="content">
             <h2 class="greeting">Hello {{ $name }},</h2>
-
+            @if ($link !== '#')
             <div class="message-body">
                 <p>You are invited to our quiz event! 🎉</p>
                 <p>Please click the button below to participate:</p>
 
             </div>
+            @endif
+            @if ($link === '#')
+            <p style="color:#e53935;font-weight:bold;">Your registration has been rejected.</p>
+            @else
             <p>
                 <a href="{{ $link }}"
                     style="display:inline-block;padding:10px 20px;
-                  background:#4CAF50;color:#fff;
-                  text-decoration:none;border-radius:5px;">
+                   background:#4CAF50;color:#fff;
+                   text-decoration:none;border-radius:5px;">
                     Join Quiz
                 </a>
             </p>
+            @endif
             <div class="divider"></div>
 
             <div class="email-info">
@@ -278,7 +283,7 @@
             </div>
 
             <div class="school-logo-container">
-                  <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
+                <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
             </div>
         </div>
 

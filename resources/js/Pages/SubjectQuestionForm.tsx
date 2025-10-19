@@ -35,7 +35,7 @@ interface Question {
 
 export default function SubjectQuestionForm() {
     const [showModal, setShowModal] = useState<boolean>(true);
-    const [quizTitle, setQuizTitle] = useState<string>('');
+  
     const [questions, setQuestions] = useState<Question[]>([]);
     const [previewContent, setPreviewContent] = useState<React.ReactNode[]>([]);
     // Add this state variable to your component
@@ -44,7 +44,7 @@ export default function SubjectQuestionForm() {
     const [selectedQuestion, setSelectedQuestion] = useState(null)
     const { subject_questions, subjectId } = usePage().props;
     const [showPreview, setShowPreview] = useState<boolean>(true);
-
+  const [quizTitle, setQuizTitle] = useState<string>(subject_questions[0].subject_name);
     const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
 
     const handleBlankCanvasClick = (): void => {
@@ -704,6 +704,9 @@ export default function SubjectQuestionForm() {
 
     const currentRound = rounds.find(round => round.value === selectedRound);
 
+    useEffect(() => {
+        setQuizTitle(subject_questions[0].subject_name)
+    },[subject_questions])
     return (
         <AuthenticatedLayout>
             <Head title="Create Quiz" />
@@ -753,8 +756,7 @@ export default function SubjectQuestionForm() {
 
             <div className={`py-12 px-6 grid gap-6 transition-all duration-300 grid-cols-3`}>
 
-                
-                {/* Column 1 - Quiz Questions (Collapsible) */}
+                               {/* Column 1 - Quiz Questions (Collapsible) */}
                 <div className={`relative transition-all duration-300 ${isFirstColumnCollapsed ? 'md:hidden' : 'block'
                     }`}>
                     {/* Collapse/Expand Button */}
@@ -822,7 +824,7 @@ export default function SubjectQuestionForm() {
                            
                         </div>
                     </div>
-                    <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
+                    {/* <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
                     <input
                         id="quiz-title"
                         type="text"
@@ -830,7 +832,8 @@ export default function SubjectQuestionForm() {
                         className="w-full border p-3 mb-4 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
                         value={quizTitle}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setQuizTitle(e.target.value)}
-                    />
+                        disabled
+                    /> */}
 
                     <div className="space-y-4">
                         {questions.map((q) => (
