@@ -27,16 +27,16 @@ class QuizEventController extends Controller
         $data = json_decode($request->leaderboard, true);
 
         $place = 1;
-        // foreach ($data as $item) {
-        //     LeaderboardLog::create([
-        //         'user_id' => Auth::id(),
-        //         'participant_id' => $item['id'],
-        //         'total_score'   => $item['score'],
-        //         'place'       =>  $place,
-        //         'subject_id'  => $item['subject_id'],
-        //     ]);
-        //     $place++;
-        // }
+        foreach ($data as $item) {
+            LeaderboardLog::create([
+                'user_id' => Auth::id(),
+                'participant_id' => $item['id'],
+                'total_score'   => $item['score'],
+                'place'       =>  $place,
+                'subject_id'  => $item['subject_id'],
+            ]);
+            $place++;
+        }
 //    dd($subject_id);
         Lobby::where('id', $id)->update([
             'reveal_answer' => 0,

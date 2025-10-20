@@ -151,6 +151,18 @@
             display: flex;
             align-items: center;
         }
+         .school-logo-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .school-logo-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+        }
 
         .email-info p::before {
             content: '📧';
@@ -236,7 +248,9 @@
     <div class="email-container">
         <div class="header">
             <div class="logo-section">
-                <div class="company-logo"></div>
+                <div class="company-logo">
+                    <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
+                </div>
                 <h1>{{ $subject_line }}</h1>
                 <div class="header-subtitle">PUPT QUIZ</div>
             </div>
@@ -253,6 +267,10 @@
 
             <div class="email-info">
                 <p>We sent this email to: {{ $email }}</p>
+            </div>
+
+            <div class="school-logo-container">
+                <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
             </div>
         </div>
 

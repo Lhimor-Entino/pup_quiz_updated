@@ -83,11 +83,11 @@ export default function Authenticated({ header, children, }) {
                             className: "text-red-600",
                             children: "Quiz Management",
                           }),
-                          _jsx(ResponsiveNavLink, {
-                            href: "/participant-management",
-                            className: "text-red-600",
-                            children: "Participant Management",
-                          }),
+                          // _jsx(ResponsiveNavLink, {
+                          //   href: "/participant-management",
+                          //   className: "text-red-600",
+                          //   children: "Participant Management",
+                          // }),
                           _jsx(ResponsiveNavLink, {
                             href: "/scoring",
                             className: "text-red-600",

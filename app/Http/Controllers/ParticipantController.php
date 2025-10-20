@@ -106,6 +106,7 @@ class ParticipantController extends Controller
         return Participants::where('lobby_code', $lobby->lobby_code)
             // ->where('archive', 1)
             ->where("subject_id", $subject_id)
+            ->where("is_approved", "2")
             ->orderBy('score', 'desc')
             ->orderBy('created_at', 'asc') // if scores are tied, earlier entry comes first
             ->get();
@@ -224,6 +225,7 @@ class ParticipantController extends Controller
 
         $teams = Participants::where("lobby_code", $lobby->lobby_code)
             ->where("subject_id", $subject_id)
+            ->where("is_approved","2")
             ->get();
         return $teams;
     }
@@ -352,115 +354,170 @@ class ParticipantController extends Controller
     public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id, $q_type, $prev_score_ui, $new_question)
     {
 
-        try {
+        
+        // 1. Find the participant or fail
+        $participant = Participants::where("id", $id)->firstOrFail();
+
+        // 2. Add the new score to the existing one
+        $newScore = $participant->score + $score;
+        $prev_ans = $ans;
+        // 3. Update the score
 
 
-            // 1. Find the participant or fail
-            $participant = Participants::where("id", $id)->firstOrFail();
-            $sub_question = SubjectQuestion::where("id", $question_id)->first();
-            $c_lobby = Lobby::where("id", $lobby_id)->first();
-            // 2. Add the new score to the existing one
-            $newScore = $participant->score + $score;
-            $prev_score = $prev_score_ui == 0 ? $participant->score : $prev_score_ui;
-            $d = "no";
-            // if ($c_lobby->question_num == $curr_item) {
-            if ($participant->prev_answer_correct == 1 && $score <= 0) {
+        // if ($score >= 0 && $q_type !== "short-answer") {
+        //     $participant->score = $newScore;
+        // }
 
-                if ($participant->score <= 0) {
-                    $newScore = 0;
-                    $d = "s" . $newScore;
-                    $prev_score = $prev_score_ui;
-                } else {
-                    $newScore  =  $participant->score  - $sub_question->points;
-                    $d = "swww" . $newScore;
-                    $prev_score =   $prev_score_ui;
-                }
-                 $prev_score =  $newScore;
-            } else {
-                $newScore = $new_question == "yes" ? $score + $prev_score_ui : $participant->score + $score;
-                $prev_score = $participant->score;
-                $d = "YEs" . $score;
-                // dd("Previous Score 1:", $prev_score);
+        $participant->prev_answer = $prev_ans;
+        $participant->prev_answer_correct = $score > 0 ? 1 : 0;
+        //
+        $participant->save();
 
-            }
-            // }else{
-            //       $d = "YEs else" . $newScore;
-            // }
-            $prev_ans = $ans;
-            // 3. Update the score
+        // PointsHistory::where("participant_id", $id)
+        //     ->where("lobby_id", $lobby_id)
+        //     ->where("question_id", $question_id)
+        //  ->whereDate("created_at", Carbon::today()) // compares only the date
+        //     ->delete();
+        $record = PointsHistory::where("participant_id", $id)
+            ->where("lobby_id", $lobby_id)
+            ->where("question_id", $question_id)
+            ->whereDate("created_at", Carbon::today())
+            ->first();
 
+        if ($record) {
+            $record->delete();
+            // optional: return success response
+        } else {
 
             if ($score >= 0 && $q_type !== "short-answer") {
                 $participant->score = $newScore;
-                $prev_score = $newScore;
-                // dd("Previous Score 2:", $prev_score);
-
             }
-
-            // if($score <=0 ){
-            //       $prev_score = intval($prev_score_ui);
-            // }
-            $participant->prev_answer = $prev_ans;
-            $participant->prev_answer_correct = $score > 0 ? 1 : 0;
-            //
-            $participant->save();
-
-            // PointsHistory::where("participant_id", $id)
-            //     ->where("lobby_id", $lobby_id)
-            //     ->where("question_id", $question_id)
-            //  ->whereDate("created_at", Carbon::today()) // compares only the date
-            //     ->delete();
-            $record = PointsHistory::where("participant_id", $id)
-                ->where("lobby_id", $lobby_id)
-                ->where("question_id", $question_id)
-                ->whereDate("created_at", Carbon::today())
-                ->first();
-
-            if ($record) {
-                $record->delete();
-                // optional: return success response
-            } else {
-
-                if ($score >= 0 && $q_type !== "short-answer") {
-                    $participant->score = $newScore;
-                }
-            }
-            $participant->save();
-            PointsHistory::create([
-                "points" =>  $score,
-                "question" =>  $question,
-                "answer" => $ans,
-                "participant_id" => $id,
-                'lobby_id' =>  $lobby_id,
-                'question_id' => $question_id
-            ]);
-
-
-            // 4. Optional: return a response
-            return response()->json([
-                'message' => 'Score updated successfully.',
-                'new_score' => $participant->score,
-                'updated_score' => $newScore,
-                'prev_score' => $prev_score,
-                'cl' => $c_lobby->question_num,
-
-                '$d' => $d
-            ]);
-        } catch (QueryException $e) {
-            // Catch database query errors (SQL, constraint violations, etc.)
-            return response()->json([
-                'success' => false,
-                'message' => 'Database error occurred.',
-                'error' => $e->getMessage(), // optional: remove in production
-            ], 500);
-        } catch (\Exception $e) {
-            // Catch any other general errors
-            return response()->json([
-                'success' => false,
-                'message' => 'Unexpected error occurred.',
-                'error' => $e->getMessage(),
-            ], 500);
         }
+        $participant->save();
+        PointsHistory::create([
+            "points" =>  $score,
+            "question" =>  $question,
+            "answer" => $ans,
+            "participant_id" => $id,
+            'lobby_id' =>  $lobby_id,
+            'question_id' => $question_id
+        ]);
+
+
+        // 4. Optional: return a response
+        return response()->json([
+            'message' => 'Score updated successfully.',
+            'new_score' => $participant->score,
+        ]);
+        // try {
+
+
+        //     // 1. Find the participant or fail
+        //     $participant = Participants::where("id", $id)->firstOrFail();
+        //     $sub_question = SubjectQuestion::where("id", $question_id)->first();
+        //     $c_lobby = Lobby::where("id", $lobby_id)->first();
+        //     // 2. Add the new score to the existing one
+        //     $newScore = $participant->score + $score;
+        //     $prev_score = $prev_score_ui == 0 ? $participant->score : $prev_score_ui;
+        //     $d = "no";
+        //     // if ($c_lobby->question_num == $curr_item) {
+        //     if ($participant->prev_answer_correct == 1 && $score <= 0) {
+
+        //         if ($participant->score <= 0) {
+        //             $newScore = 0;
+        //             $d = "s" . $newScore;
+        //             $prev_score = $prev_score_ui;
+        //         } else {
+        //             $newScore  =  $participant->score  - $sub_question->points;
+        //             $d = "swww" . $newScore;
+        //             $prev_score =   $prev_score_ui;
+        //         }
+        //          $prev_score =  $newScore;
+        //     } else {
+        //         $newScore = $new_question == "yes" ? $score + $prev_score_ui : $participant->score + $score;
+        //         $prev_score = $participant->score;
+        //         $d = "YEs" . $score;
+        //         // dd("Previous Score 1:", $prev_score);
+
+        //     }
+        //     // }else{
+        //     //       $d = "YEs else" . $newScore;
+        //     // }
+        //     $prev_ans = $ans;
+        //     // 3. Update the score
+
+
+        //     if ($score >= 0 && $q_type !== "short-answer") {
+        //         $participant->score = $newScore;
+        //         $prev_score = $newScore;
+        //         // dd("Previous Score 2:", $prev_score);
+
+        //     }
+
+        //     // if($score <=0 ){
+        //     //       $prev_score = intval($prev_score_ui);
+        //     // }
+        //     $participant->prev_answer = $prev_ans;
+        //     $participant->prev_answer_correct = $score > 0 ? 1 : 0;
+        //     //
+        //     $participant->save();
+
+        //     // PointsHistory::where("participant_id", $id)
+        //     //     ->where("lobby_id", $lobby_id)
+        //     //     ->where("question_id", $question_id)
+        //     //  ->whereDate("created_at", Carbon::today()) // compares only the date
+        //     //     ->delete();
+        //     $record = PointsHistory::where("participant_id", $id)
+        //         ->where("lobby_id", $lobby_id)
+        //         ->where("question_id", $question_id)
+        //         ->whereDate("created_at", Carbon::today())
+        //         ->first();
+
+        //     if ($record) {
+        //         $record->delete();
+        //         // optional: return success response
+        //     } else {
+
+        //         if ($score >= 0 && $q_type !== "short-answer") {
+        //             $participant->score = $newScore;
+        //         }
+        //     }
+        //     $participant->save();
+        //     PointsHistory::create([
+        //         "points" =>  $score,
+        //         "question" =>  $question,
+        //         "answer" => $ans,
+        //         "participant_id" => $id,
+        //         'lobby_id' =>  $lobby_id,
+        //         'question_id' => $question_id
+        //     ]);
+
+
+        //     // 4. Optional: return a response
+        //     return response()->json([
+        //         'message' => 'Score updated successfully.',
+        //         'new_score' => $participant->score,
+        //         'updated_score' => $newScore,
+        //         'prev_score' => $prev_score,
+        //         'cl' => $c_lobby->question_num,
+
+        //         '$d' => $d
+        //     ]);
+        // } catch (QueryException $e) {
+        //     // Catch database query errors (SQL, constraint violations, etc.)
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Database error occurred.',
+        //         'error' => $e->getMessage(), // optional: remove in production
+        //     ], 500);
+        // } catch (\Exception $e) {
+        //     // Catch any other general errors
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Unexpected error occurred.',
+        //         'error' => $e->getMessage(),
+        //     ], 500);
+        // }
     }
     /**
      * Display the specified resource.

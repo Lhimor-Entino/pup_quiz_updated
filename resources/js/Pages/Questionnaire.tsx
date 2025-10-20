@@ -191,8 +191,8 @@ const Questionnaire = () => {
       const new_question = localStorage.getItem("new_question")
       const res = await axios.get(`/updateScore/${team_id}/${score}/${ans}/${currentQuestion['question']}/${id}/${currentQuestion['id']}/${currentQuestion['type']}/${prev_score}/${new_question}`)
 
-      if(res.data){
-        localStorage.setItem('prev_score',res.data.prev_score)
+      if (res.data) {
+        localStorage.setItem('prev_score', res.data.prev_score)
       }
       sumbmitAlert()
 
@@ -252,7 +252,7 @@ const Questionnaire = () => {
   }
   const handleRevealLeaderboard = async () => {
 
-   
+
     setLoading(true)
     try {
       await axios.get(`/lobby-revealLeaderboard/${id}/${subject_id}/${items}`)
@@ -349,7 +349,7 @@ const Questionnaire = () => {
         });
         setSelectedOption(null)
         setSelectedLevel(null)
-        localStorage.setItem("new_question","yes")
+        localStorage.setItem("new_question", "yes")
       }
       console.log(response)
     } catch (error) {
@@ -380,35 +380,35 @@ const Questionnaire = () => {
     if (auth.user) return;
     setSelectedOption(option)
 
-    if (option == null) {
-      updateScore(-1, option)
-      return
-    }
+    // if (option == null) {
+    //   updateScore(-1, option)
+    //   return
+    // }
 
-    const type = currentQuestion['type']
+    // const type = currentQuestion['type']
 
-    if (type == "short-answer") {
-      updateScore(currentQuestion['points'], option)
-      return
-    }
+    // if (type == "short-answer") {
+    //   updateScore(currentQuestion['points'], option)
+    //   return
+    // }
 
-    if (option == "false" || option == "true") {
-      const ans = currentQuestion['trueFalseAnswer']
+    // if (option == "false" || option == "true") {
+    //   const ans = currentQuestion['trueFalseAnswer']
 
-      if (option == "true" && ans == 1 || option == "false" && ans == 0) {
-        updateScore(currentQuestion['points'], option)
-      } else {
-        updateScore(0, option)
-      }
-      return
-    }
-    if (option.isCorrect) {
+    //   if (option == "true" && ans == 1 || option == "false" && ans == 0) {
+    //     updateScore(currentQuestion['points'], option)
+    //   } else {
+    //     updateScore(0, option)
+    //   }
+    //   return
+    // }
+    // if (option.isCorrect) {
 
-      updateScore(currentQuestion['points'], option)
+    //   updateScore(currentQuestion['points'], option)
 
-    } else {
-      updateScore(0, option)
-    }
+    // } else {
+    //   updateScore(0, option)
+    // }
 
 
 
@@ -439,7 +439,7 @@ const Questionnaire = () => {
           iconColor: '#399918 ',
         });
       }
-      
+
     } catch (error) {
       console.log(error)
     } finally {
@@ -451,7 +451,7 @@ const Questionnaire = () => {
 
     try {
       const response = await axios.get(`/leaderboard/${id}/${subject_id}`)
- 
+
       setLeaderboard(response.data)
     } catch (error) {
       console.log(error)
@@ -545,7 +545,7 @@ const Questionnaire = () => {
     try {
       // Make the GET request. Crucially, set responseType to 'blob'
       // This tells axios to expect binary data and return it as a Blob object.
-      
+
       const response = await axios.get(`/report/teams/excel/${id}`, {
         responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
       });
@@ -685,6 +685,34 @@ const Questionnaire = () => {
       if (!auth.user) {
         if (selectedOption == null) {
           updateScore(-1, selectedOption)
+        } else {
+       
+
+          const type = currentQuestion['type']
+
+          if (type == "short-answer") {
+            updateScore(currentQuestion['points'], selectedOption)
+            return
+          }
+
+          if (selectedOption == "false" || selectedOption == "true") {
+            const ans = currentQuestion['trueFalseAnswer']
+
+            if (selectedOption == "true" && ans == 1 || selectedOption == "false" && ans == 0) {
+              updateScore(currentQuestion['points'], selectedOption)
+            } else {
+              updateScore(0, selectedOption)
+            }
+            return
+          }
+          if (selectedOption.isCorrect) {
+
+            updateScore(currentQuestion['points'], selectedOption)
+
+          } else {
+            updateScore(0, selectedOption)
+          }
+
         }
 
       }
@@ -715,16 +743,16 @@ const Questionnaire = () => {
 
   useEffect(() => {
     if (currentQuestion) {
-     
+
       setSeconds(currentQuestion['timeLimit'])
       setLevel(currentQuestion['difficulty'])
       setShortAnswerSubmitted(false)
       setParticapantShortAns([])
-      if(itemNumber as number <= 1){
-          localStorage.setItem("new_question","no")
-            //  localStorage.setItem("prev_score","0")
-      }else{
-      localStorage.setItem("new_question","yes")
+      if (itemNumber as number <= 1) {
+        localStorage.setItem("new_question", "no")
+        //  localStorage.setItem("prev_score","0")
+      } else {
+        localStorage.setItem("new_question", "yes")
       }
 
     }
@@ -740,6 +768,12 @@ const Questionnaire = () => {
     }
 
   }, [currentQuestion, seconds, state])
+
+  // useEffect(() => {
+  //   if(!auth?.user && seconds == 0 && state=="timer-started"){
+  //       alert("save answer")
+  //   }
+  // },[seconds])
 
   useEffect(() => {
     setShowLevelCard(true)
@@ -789,11 +823,11 @@ const Questionnaire = () => {
   useEffect(() => {
     if (state == "switch-new-level") {
       getNewLevel()
-      
+
     }
 
   }, [state, level])
-const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const restricted_state = ["timer-started", "options-revealed", "over-all-leaderboard", "finished", "answer-revealed", "leaderboard-revealed"]
   const e_state = ["timer-started", "options-revealed", "answer-revealed",]
@@ -943,13 +977,13 @@ const [isModalOpen, setIsModalOpen] = useState(false);
 
         {/* // MODAL LEADERBOARD */}
         <LeaderboardModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        leaderboard={leaderboard}
-        team_id={1}
-        state="over-all-leaderboard"
-        currentQuestion={{ points: 10 }}
-      />
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          leaderboard={leaderboard}
+          team_id={1}
+          state="over-all-leaderboard"
+          currentQuestion={{ points: 10 }}
+        />
 
 
         {/* // SHORT ANSWER  MODAL FOR ORGANIZER */}
@@ -1093,7 +1127,7 @@ const [isModalOpen, setIsModalOpen] = useState(false);
 
         {
           auth?.user &&
-          <div  onClick={() => setIsModalOpen(true)}>
+          <div onClick={() => setIsModalOpen(true)}>
             <LeaderBoardIcon />
           </div>
 
@@ -1147,10 +1181,10 @@ const [isModalOpen, setIsModalOpen] = useState(false);
               </Button>
             </div> : ""
         }
-
+        {/* || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) */}
 
         {
-          auth?.user && state == "finished" || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
+          auth?.user && state == "finished" || itemNumber == items && auth?.user && state == "over-all-leaderboard" && !e_state.includes(state) ?
             <div className='flex gap-x-2 justify-end'>
               <Button disabled={loading} className='bg-orange-600 text-3xl px-14 h-20' onClick={() => handleCloseEvent()}>
                 <LoadingText loading={loading} text="Loading next question please wait..." normal_text='Send All to lobby' />
@@ -1449,8 +1483,12 @@ const [isModalOpen, setIsModalOpen] = useState(false);
           </div>
           : ""
         }
+
+
+
+        {/* state == "finished" && auth?.user || itemNumber == items && auth?.user && state != "" && !e_state.includes(state)  */}
         {
-          state == "finished" && auth?.user || itemNumber == items && auth?.user && state != "" && !e_state.includes(state) ?
+          auth?.user && state == "finished" || itemNumber == items && auth?.user && state == "over-all-leaderboard" && !e_state.includes(state) ?
             <div className=' w-full flex justify-center'>
               {/* 
           <Button onClick={() => handleGenerateReport()}>

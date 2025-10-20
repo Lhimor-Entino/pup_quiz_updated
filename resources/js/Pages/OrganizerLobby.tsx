@@ -210,6 +210,7 @@ const OrganizerLobby = (props: Props) => {
                                                         className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                                         value={data.name}
                                                         onChange={e => setData('name', e.target.value)}
+                                                        required
                                                     />
                                                     {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                                                 </div>
@@ -221,6 +222,7 @@ const OrganizerLobby = (props: Props) => {
                                                         className="border-red-200 focus:border-red-500 focus:ring-red-500"
                                                         value={data.code}
                                                         onChange={e => setData('code', e.target.value)}
+                                                        required
                                                     />
                                                     {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
                                                 </div>

@@ -528,7 +528,7 @@ export default function PreRegistrationForm() {
 
                         <h2 className="text-2xl font-semibold text-gray-800">Team Information</h2>
                         <div className="space-y-4">
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Team Name *
                                 </label>
@@ -540,7 +540,7 @@ export default function PreRegistrationForm() {
                                     placeholder="Team Name"
                                     className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                 />
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -551,7 +551,7 @@ export default function PreRegistrationForm() {
                                         <div key={index} className="bg-gray-50 p-4 rounded border border-gray-200">
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-sm font-medium text-gray-700">Member {index + 1}</span>
-                                                <div className="flex gap-2">
+                                                {/* <div className="flex gap-2">
                                                     <button
                                                         onClick={() => openUploadModal(index)}
                                                         className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
@@ -570,7 +570,7 @@ export default function PreRegistrationForm() {
                                                             Remove
                                                         </button>
                                                     )}
-                                                </div>
+                                                </div> */}
                                             </div>
                                             <div className="space-y-2">
                                                 <input
@@ -918,14 +918,22 @@ export default function PreRegistrationForm() {
 
                                     <button
                                         onClick={() => {
+                                  
                                             if (currentStep === steps.length - 1) {
                                                    const isChecked = document.getElementById("confirm").checked;
                                     
                                                    if(!isChecked)return
                                                 handleSubmit();
-                                            } else {
+                                            }
+                                            else if(currentStep ==2){
+                                                
+                                                if(selectedSubjects.length == 0) return
+                                                  nextStep();
+                                            }
+                                            else {
                                                
                                                 if(!agreePrivacy) return
+                                        
                                                 nextStep();
                                             }
                                         }}
@@ -936,6 +944,7 @@ export default function PreRegistrationForm() {
                                             }`}
                                     >
                                         {currentStep === steps.length - 1 && !isSubmitting ? 'Submit' : !isSubmitting ? 'Next' : ""}
+                                        
                                         {isSubmitting && currentStep === steps.length - 1 ? 'Submitting...' : ''}
                                         {currentStep < steps.length - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
                                     </button>

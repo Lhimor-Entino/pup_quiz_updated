@@ -82,7 +82,7 @@
         }
 
         .company-logo::before {
-            content: '✉';
+            content: url('/images/school_logo.png');
             font-size: 32px;
             color: white;
         }
@@ -249,7 +249,10 @@
     <div class="email-container">
         <div class="header">
             <div class="logo-section">
-                <div class="company-logo"></div>
+                <div class="company-logo">
+
+                    <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
+                </div>
                 <h1>{{ $subject_line }}</h1>
                 <div class="header-subtitle">PUPT QUIZ</div>
             </div>
@@ -282,9 +285,6 @@
                 <p>We sent this email to: {{ $email }}</p>
             </div>
 
-            <div class="school-logo-container">
-                <img src="{{ asset('images/school_logo.png') }}" alt="App Logo" style="width: 100%; height:100%;">
-            </div>
         </div>
 
         <div class="footer">
