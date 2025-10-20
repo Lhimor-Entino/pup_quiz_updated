@@ -7,66 +7,142 @@ use App\Models\Participants;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TeamsExport implements FromCollection, WithHeadings, WithMapping
+class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithEvents, ShouldAutoSize, WithCustomStartCell
 {
-
-    private $rankCounter = 0; // keep track of ranks
+    private $rankCounter = 0;
     private $lobbyId;
+     private $subjecId;
     private $event;
-    public function __construct($lobbyId)
+
+    public function __construct($lobbyId,$subjecId)
     {
         $this->lobbyId = $lobbyId;
+         $this->subjecId = $subjecId;
     }
-    /**
-     * 
-     * @return \Illuminate\Support\Collection
-     */
+
+    public function startCell(): string
+    {
+        return 'A3';
+    }
+
     public function collection()
     {
         $lobby = Lobby::where('id', $this->lobbyId)->first();
         $this->event = $lobby->name;
+
         return Participants::where("lobby_code", $lobby->lobby_code)
-        ->where("archive",1)
+            ->where("archive", 1)
+            ->where("subject_id",$this->subjecId)
             ->orderBy('score', 'desc')
-            ->get(); // Or Team::with('members')->get(); if members are related
+            ->get();
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
+        // Headers will be placed at row 3
         return [
             'Quiz Event',
             'Lobby Code',
             'Rank',
             'Team Name',
-            'Participants Score',
+            'Team Leader Name',
+            'Members Name',
+            'Total Score',
             'Date & Time of Quiz',
-
         ];
     }
 
-    /**
-     * @param mixed $team
-     * @return array
-     */
     public function map($team): array
     {
-        // Decode the members JSON string into an array of member objects
         $members = json_decode($team->members, true);
-        // Increment rank counter each time map() is called
+        $memberNames = collect($members)->pluck('name')->implode(', ');
         $this->rankCounter++;
-
 
         return [
             $this->event,
             $team->lobby_code,
             $this->rankCounter,
             $team->team,
-            $team->score == 0 ? "0" : $team->score,
-            $team->updated_at,
+            $team->team_leader ?? '',
+            $memberNames,
+            $team->score ?? "0",
+            optional($team->updated_at)->format('m/d/Y g:i A'),
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        // Header row styling (A3:H3)
+        $sheet->getStyle('A3:H3')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'color' => ['rgb' => '800000']],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+        ]);
+
+        return [];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+
+                // --- Logo in column B (B1) ---
+                $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                $drawing->setPath(public_path('images/school_logo.png'));
+                $drawing->setHeight(50);
+                $drawing->setCoordinates('B1');
+                $drawing->setOffsetX(5);
+                $drawing->setWorksheet($sheet);
+
+                // --- University Name (Row 1) - Merge entire row ---
+                $sheet->mergeCells('A1:H1');
+                $sheet->setCellValue('A1', 'Polytechnic University of the Philippines');
+                $sheet->getStyle('A1')->getFont()->setItalic(true)->setSize(11);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center')->setVertical('center');
+
+                // --- Report Title (Row 2) - Merge entire row ---
+                $sheet->mergeCells('A2:H2');
+                $sheet->setCellValue('A2', 'PUP Quiz Bee Post-Quiz Summary');
+                $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center')->setVertical('center');
+
+                // --- Data Borders ---
+                $lastRow = $sheet->getHighestRow();
+                $sheet->getStyle("A3:H{$lastRow}")->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => ['rgb' => '000000']
+                        ]
+                    ]
+                ]);
+
+                // --- Footer ---
+                $footerRow = $lastRow + 2;
+                $sheet->mergeCells("A{$footerRow}:H{$footerRow}");
+                $sheet->setCellValue("A{$footerRow}", 'Generated by: PUPT Quiz Bee Management System | Date: =TODAY()');
+                $sheet->getStyle("A{$footerRow}")->getFont()->setItalic(true)->setSize(9);
+                $sheet->getStyle("A{$footerRow}")->getAlignment()->setHorizontal('center');
+
+                // --- Auto column width ---
+                foreach (range('A', 'H') as $col) {
+                    $sheet->getColumnDimension($col)->setAutoSize(true);
+                }
+
+                // --- Row heights ---
+                $sheet->getRowDimension('1')->setRowHeight(40);
+                $sheet->getRowDimension('2')->setRowHeight(25);
+                $sheet->getRowDimension('3')->setRowHeight(25);
+            },
         ];
     }
 }

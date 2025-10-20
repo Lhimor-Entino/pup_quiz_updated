@@ -488,7 +488,7 @@ const Questionnaire = () => {
 
   const getParticipantShortAnswer = async () => {
     try {
-      const response = await axios.get(`/participant-shor-answer/${id}`)
+      const response = await axios.get(`/participant-shor-answer/${id}/${subject_id}`)
 
       setParticapantShortAns(response.data)
 
@@ -546,7 +546,7 @@ const Questionnaire = () => {
       // Make the GET request. Crucially, set responseType to 'blob'
       // This tells axios to expect binary data and return it as a Blob object.
 
-      const response = await axios.get(`/report/teams/excel/${id}`, {
+      const response = await axios.get(`/report/teams/excel/${id}/${subject_id}`, {
         responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
       });
 

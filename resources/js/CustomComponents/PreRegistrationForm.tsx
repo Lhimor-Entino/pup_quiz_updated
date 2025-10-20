@@ -11,7 +11,7 @@ export default function PreRegistrationForm() {
     const [submitError, setSubmitError] = useState('');
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
-    const [showUploadModalTeamLeader,setShowUploadModalTeamLeader] = useState(false)
+    const [showUploadModalTeamLeader, setShowUploadModalTeamLeader] = useState(false)
     const [formData, setFormData] = useState({
         category: '',
         fullName: '',
@@ -858,8 +858,8 @@ export default function PreRegistrationForm() {
         }
     };
 
-    
- 
+
+
 
     const removeFile = (fileType) => {
         if (selectedMemberIndex !== null) {
@@ -868,6 +868,20 @@ export default function PreRegistrationForm() {
             setFormData(prev => ({ ...prev, members: newMembers }));
         }
     };
+
+    const handleDropForMember = (
+    e: DragEvent<HTMLDivElement>,
+    memberIndex: number,
+    field: keyof typeof formData.members[0]['requirements']
+) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    const newMembers = [...formData.members];
+    newMembers[memberIndex].requirements[field] = file;
+    setFormData(prev => ({ ...prev, members: newMembers }));
+};
 
     return (
         <>
@@ -955,7 +969,7 @@ export default function PreRegistrationForm() {
                                         onClick={() => {
 
                                             if (currentStep === steps.length - 1) {
-                              
+
                                                 handleSubmit();
                                             }
                                             else if (currentStep == 2) {
@@ -1057,7 +1071,8 @@ export default function PreRegistrationForm() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div   onDrop={(e) => handleDropForMember(e, selectedMemberIndex,"studentId")}
+                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1100,7 +1115,8 @@ export default function PreRegistrationForm() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div  onDrop={(e) => handleDropForMember(e, selectedMemberIndex,"registrationForm")}
+                                        onDragOver={(e) => e.preventDefault()}  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1143,7 +1159,8 @@ export default function PreRegistrationForm() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDrop={(e) => handleDropForMember(e, selectedMemberIndex,"consentForm")}
+                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1177,14 +1194,14 @@ export default function PreRegistrationForm() {
                             </div>
                         )}
 
-                        
+
                         {/* Upload Requirements Modal */}
-                        {showUploadModalTeamLeader  && (
+                        {showUploadModalTeamLeader && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                                 <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                                     <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
                                         <h3 className="text-xl font-semibold text-gray-800">
-                                            Upload Requirements - Team Leader 
+                                            Upload Requirements - Team Leader
                                         </h3>
                                         <button
                                             onClick={() => setShowUploadModalTeamLeader(false)}
@@ -1219,11 +1236,12 @@ export default function PreRegistrationForm() {
                                                                     {formDataDoc.studentId.name}
                                                                 </span>
                                                             </div>
-                                                          
+
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, "studentId")} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1257,11 +1275,12 @@ export default function PreRegistrationForm() {
                                                                     {formDataDoc.registrationForm.name}
                                                                 </span>
                                                             </div>
-                                                     
+
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, "registrationForm")} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1295,11 +1314,12 @@ export default function PreRegistrationForm() {
                                                                     {formDataDoc.consentForm.name}
                                                                 </span>
                                                             </div>
-                                                    
+
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, "consentForm")} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">

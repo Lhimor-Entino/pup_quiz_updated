@@ -176,7 +176,7 @@ Route::get('/category', function () {
 Route::get('/pre-registration', function () {
 
     try {
-        $logs =  PreRegistration::with('lobby','participant')->get();
+        $logs =  PreRegistration::with('lobby','participant')->where("user_id",Auth::user()->id)->get();
     } catch (\Exception $e) {
         // Return error response if something goes wrong
         return response()->json([
@@ -530,10 +530,10 @@ Route::get('/updateScore/{id}/{score}/{ans}/{question}/{lobby_id}/{question_id}/
 Route::get('/leaderboard/{id}/{subject_id}', [ParticipantController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/currentQuestionLeaderboard/{id}/{question_id}', [ParticipantController::class, 'currentQuestionLeaderboard'])->name('currentQuestionLeaderboard');
 Route::get('/participant-code-update/{id}/{code}', [ParticipantController::class, 'updateTeamCode'])->name('participant-code-update');
-Route::get('/participant-shor-answer/{id}', [ParticipantController::class, 'shortAnswer'])->name('participant-shor-answer');
+Route::get('/participant-shor-answer/{id}/{subject_id}', [ParticipantController::class, 'shortAnswer'])->name('participant-shor-answer');
 Route::post('/participant-answer-update', [ParticipantController::class, 'updateAns'])->name('participant-shor-answer');
 
-Route::get('/report/teams/excel/{lobby_id}', [ReportController::class, 'downloadTeamsReport']);
+Route::get('/report/teams/excel/{lobby_id}/{subject_id}', [ReportController::class, 'downloadTeamsReport']);
 
 Route::post('/login-info', [LoginLogsController::class, 'isFirstLogin'])->name('login-info');
 

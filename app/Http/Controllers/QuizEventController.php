@@ -99,7 +99,8 @@ class QuizEventController extends Controller
         Participants::where('lobby_code', $code)->update([
             'score' => 0,
             'archive' => 0,
-             'prev_answer_correct' => 0
+             'prev_answer_correct' => 0,
+             'prev_answer' => NULL
             // add more fields as needed
         ]);
     }

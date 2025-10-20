@@ -35,7 +35,7 @@ interface Question {
 
 export default function SubjectQuestionForm() {
     const [showModal, setShowModal] = useState<boolean>(true);
-  
+
     const [questions, setQuestions] = useState<Question[]>([]);
     const [previewContent, setPreviewContent] = useState<React.ReactNode[]>([]);
     // Add this state variable to your component
@@ -44,7 +44,7 @@ export default function SubjectQuestionForm() {
     const [selectedQuestion, setSelectedQuestion] = useState(null)
     const { subject_questions, subjectId } = usePage().props;
     const [showPreview, setShowPreview] = useState<boolean>(true);
-  const [quizTitle, setQuizTitle] = useState<string>(subject_questions[0].subject_name);
+    const [quizTitle, setQuizTitle] = useState<string>(subject_questions[0].subject_name);
     const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
 
     const handleBlankCanvasClick = (): void => {
@@ -168,162 +168,162 @@ export default function SubjectQuestionForm() {
     };
 
     const updatePreview = () => {
-    const parsedQuestions = subject_questions[0].subjects_questions.map(q => ({
-        ...q,
-        options: JSON.parse(q.options),
-    }));
+        const parsedQuestions = subject_questions[0].subjects_questions.map(q => ({
+            ...q,
+            options: JSON.parse(q.options),
+        }));
 
-    const merged = [...parsedQuestions, ...questions];
+        const merged = [...parsedQuestions, ...questions];
 
-    const easy_questions = merged.filter(q => q.difficulty.toLowerCase() === "easy");
-    const average_questions = merged.filter(q => q.difficulty.toLowerCase() === "average");
-    const hard_questions = merged.filter(q => q.difficulty.toLowerCase() === "hard");
+        const easy_questions = merged.filter(q => q.difficulty.toLowerCase() === "easy");
+        const average_questions = merged.filter(q => q.difficulty.toLowerCase() === "average");
+        const hard_questions = merged.filter(q => q.difficulty.toLowerCase() === "hard");
 
-    // Reusable component for question table
-    const QuestionTable = ({ questions, difficulty, difficultyLabel }) => (
-        <Table>
-            <TableCaption>A list of {difficultyLabel} Questions.</TableCaption>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[100px]">Question</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Answer</TableHead>
-                    <TableHead>Time Limit</TableHead>
-                    <TableHead>Points</TableHead>
-                    <TableHead>Action</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {questions.length > 0 ? (
-                    questions.map((q, index) => (
-                        <TableRow key={`${difficulty}-${q.id}`} id={`${difficulty}-${q.id}`}>
-                            <TableCell className="font-medium">
-                                <p className="font-semibold">
-                                    {q.questionText || q.question || 'Untitled'}
-                                </p>
-                            </TableCell>
-                            <TableCell>{q.type}</TableCell>
-                            <TableCell>
-                                {q.type === 'multiple-choice' && (
-                                    <ul className="list-disc ml-5 text-sm">
-                                        {q.options
-                                            .filter(opt => opt.isCorrect)
-                                            .map(opt => (
-                                                <li key={opt.id} className="text-green-600 font-medium list-none">
-                                                    {opt.text || 'Option'} (Correct)
-                                                </li>
-                                            ))
-                                        }
-                                    </ul>
-                                )}
-                                {q.type === 'true-false' && (
-                                    <p className="text-sm">
-                                        Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}
+        // Reusable component for question table
+        const QuestionTable = ({ questions, difficulty, difficultyLabel }) => (
+            <Table>
+                <TableCaption>A list of {difficultyLabel} Questions.</TableCaption>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[100px]">Question</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Answer</TableHead>
+                        <TableHead>Time Limit</TableHead>
+                        <TableHead>Points</TableHead>
+                        <TableHead>Action</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {questions.length > 0 ? (
+                        questions.map((q, index) => (
+                            <TableRow key={`${difficulty}-${q.id}`} id={`${difficulty}-${q.id}`}>
+                                <TableCell className="font-medium">
+                                    <p className="font-semibold">
+                                        {q.questionText || q.question || 'Untitled'}
                                     </p>
-                                )}
-                                {q.type === 'short-answer' && (
-                                    <p className="text-sm">
-                                        Correct Answer: {q.shortAnswer || 'Not set'}
-                                    </p>
-                                )}
-                            </TableCell>
-                            <TableCell>{q.timeLimit}</TableCell>
-                            <TableCell>{q.points}</TableCell>
-                            <TableCell>
-                                <div className="flex items-center justify-evenly space-x-2">
-                                    <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
-                                        <Trash2Icon 
-                                            onClick={() => handleDeleteQuestion(q, `${difficulty}-${q.id}`)} 
-                                            className="w-4 h-4 text-red-600" 
-                                        />
+                                </TableCell>
+                                <TableCell>{q.type}</TableCell>
+                                <TableCell>
+                                    {q.type === 'multiple-choice' && (
+                                        <ul className="list-disc ml-5 text-sm">
+                                            {q.options
+                                                .filter(opt => opt.isCorrect)
+                                                .map(opt => (
+                                                    <li key={opt.id} className="text-green-600 font-medium list-none">
+                                                        {opt.text || 'Option'} (Correct)
+                                                    </li>
+                                                ))
+                                            }
+                                        </ul>
+                                    )}
+                                    {q.type === 'true-false' && (
+                                        <p className="text-sm">
+                                            Correct Answer: {q.trueFalseAnswer !== null ? (q.trueFalseAnswer == 1 ? 'True' : 'False') : 'Not set'}
+                                        </p>
+                                    )}
+                                    {q.type === 'short-answer' && (
+                                        <p className="text-sm">
+                                            Correct Answer: {q.shortAnswer || 'Not set'}
+                                        </p>
+                                    )}
+                                </TableCell>
+                                <TableCell>{q.timeLimit}</TableCell>
+                                <TableCell>{q.points}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center justify-evenly space-x-2">
+                                        <div className="p-1 rounded hover:bg-red-200 hover:text-white cursor-pointer">
+                                            <Trash2Icon
+                                                onClick={() => handleDeleteQuestion(q, `${difficulty}-${q.id}`)}
+                                                className="w-4 h-4 text-red-600"
+                                            />
+                                        </div>
+                                        <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
+                                            <Edit2Icon
+                                                onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }}
+                                                className="w-4 h-4 text-yellow-600"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="p-1 rounded hover:bg-yellow-200 hover:text-white cursor-pointer">
-                                        <Edit2Icon 
-                                            onClick={() => { setShowEditModal(true); setSelectedQuestion(q) }} 
-                                            className="w-4 h-4 text-yellow-600" 
-                                        />
-                                    </div>
-                                </div>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center text-gray-500">
+                                No {difficultyLabel.toLowerCase()} questions
                             </TableCell>
                         </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={6} className="text-center text-gray-500">
-                            No {difficultyLabel.toLowerCase()} questions
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
-    );
+                    )}
+                </TableBody>
+            </Table>
+        );
 
-    const newPreviewContent = (
-        <div className="mt-3">
-            <Tabs defaultValue="easy" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="easy" className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                        Easy ({easy_questions.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="average" className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                        Average ({average_questions.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="hard" className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                        Hard ({hard_questions.length})
-                    </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="easy" className="mt-6">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <h3 className="text-lg font-semibold text-green-700">Easy Questions</h3>
-                        </div>
-                        <QuestionTable 
-                            questions={easy_questions} 
-                            difficulty="easy" 
-                            difficultyLabel="Easy" 
-                        />
-                    </div>
-                </TabsContent>
-                
-                <TabsContent value="average" className="mt-6">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                            <h3 className="text-lg font-semibold text-yellow-700">Average Questions</h3>
-                        </div>
-                        <QuestionTable 
-                            questions={average_questions} 
-                            difficulty="average" 
-                            difficultyLabel="Average" 
-                        />
-                    </div>
-                </TabsContent>
-                
-                <TabsContent value="hard" className="mt-6">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                            <h3 className="text-lg font-semibold text-red-700">Hard Questions</h3>
-                        </div>
-                        <QuestionTable 
-                            questions={hard_questions} 
-                            difficulty="hard" 
-                            difficultyLabel="Hard" 
-                        />
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
+        const newPreviewContent = (
+            <div className="mt-3">
+                <Tabs defaultValue="easy" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="easy" className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            Easy ({easy_questions.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="average" className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                            Average ({average_questions.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="hard" className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                            Hard ({hard_questions.length})
+                        </TabsTrigger>
+                    </TabsList>
 
-    setPreviewContent([newPreviewContent]);
-    setShowPreview(true);
-};
+                    <TabsContent value="easy" className="mt-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <h3 className="text-lg font-semibold text-green-700">Easy Questions</h3>
+                            </div>
+                            <QuestionTable
+                                questions={easy_questions}
+                                difficulty="easy"
+                                difficultyLabel="Easy"
+                            />
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="average" className="mt-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <h3 className="text-lg font-semibold text-yellow-700">Average Questions</h3>
+                            </div>
+                            <QuestionTable
+                                questions={average_questions}
+                                difficulty="average"
+                                difficultyLabel="Average"
+                            />
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="hard" className="mt-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <h3 className="text-lg font-semibold text-red-700">Hard Questions</h3>
+                            </div>
+                            <QuestionTable
+                                questions={hard_questions}
+                                difficulty="hard"
+                                difficultyLabel="Hard"
+                            />
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        );
+
+        setPreviewContent([newPreviewContent]);
+        setShowPreview(true);
+    };
     // const updatePreview = () => {
 
 
@@ -652,7 +652,7 @@ export default function SubjectQuestionForm() {
                     setQuestions([]);
                     setPreviewContent([]);
                     setShowPreview(false);
-                   
+
                 },
                 onError: (errors) => {
                     console.error('Error saving quiz:', errors);
@@ -706,7 +706,7 @@ export default function SubjectQuestionForm() {
 
     useEffect(() => {
         setQuizTitle(subject_questions[0].subject_name)
-    },[subject_questions])
+    }, [subject_questions])
     return (
         <AuthenticatedLayout>
             <Head title="Create Quiz" />
@@ -756,7 +756,7 @@ export default function SubjectQuestionForm() {
 
             <div className={`py-12 px-6 grid gap-6 transition-all duration-300 grid-cols-3`}>
 
-                               {/* Column 1 - Quiz Questions (Collapsible) */}
+                {/* Column 1 - Quiz Questions (Collapsible) */}
                 <div className={`relative transition-all duration-300 ${isFirstColumnCollapsed ? 'md:hidden' : 'block'
                     }`}>
                     {/* Collapse/Expand Button */}
@@ -767,7 +767,7 @@ export default function SubjectQuestionForm() {
                     >
                         {isFirstColumnCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                     </button>
-                     <div>
+                    <div>
                         <div className="mt-6 mb-10">
                             {/* Round Selector */}
                             <div className="mb-4">
@@ -780,9 +780,9 @@ export default function SubjectQuestionForm() {
                                         onChange={(e) => setSelectedRound(e.target.value)}
                                         className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                     >
-                                         <option  value={""}>
-                                              Select
-                                            </option>
+                                        <option value={""}>
+                                            Select
+                                        </option>
                                         {rounds.map(round => (
                                             <option key={round.value} value={round.value}>
                                                 {round.label}
@@ -795,33 +795,33 @@ export default function SubjectQuestionForm() {
 
                             {/* Question Type Buttons */}
                             {selectedRound !== ""
-                            &&  <div className="flex flex-wrap gap-3">
-                                <p className={`border-b border-${currentRound.color}-600 w-full p-2 font-bold text-${currentRound.color}-600`}>
-                                    {currentRound.label}
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-                                    <button
-                                        onClick={() => addQuestion('multiple-choice', selectedRound)}
-                                        className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
-                                    >
-                                        <PlusCircle size={20} /> Add Multiple Choice
-                                    </button>
-                                    <button
-                                        onClick={() => addQuestion('true-false', selectedRound)}
-                                        className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
-                                    >
-                                        <PlusCircle size={20} /> Add True/False
-                                    </button>
-                                    <button
-                                        onClick={() => addQuestion('short-answer', selectedRound)}
-                                        className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
-                                    >
-                                        <PlusCircle size={20} /> Add Short Answer
-                                    </button>
+                                && <div className="flex flex-wrap gap-3">
+                                    <p className={`border-b border-${currentRound.color}-600 w-full p-2 font-bold text-${currentRound.color}-600`}>
+                                        {currentRound.label}
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                                        <button
+                                            onClick={() => addQuestion('multiple-choice', selectedRound)}
+                                            className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
+                                        >
+                                            <PlusCircle size={20} /> Add Multiple Choice
+                                        </button>
+                                        <button
+                                            onClick={() => addQuestion('true-false', selectedRound)}
+                                            className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
+                                        >
+                                            <PlusCircle size={20} /> Add True/False
+                                        </button>
+                                        <button
+                                            onClick={() => addQuestion('short-answer', selectedRound)}
+                                            className={`bg-${currentRound.color}-600 text-white rounded-full px-6 py-2 shadow-lg hover:bg-${currentRound.color}-700 transition-colors flex items-center justify-center gap-2`}
+                                        >
+                                            <PlusCircle size={20} /> Add Short Answer
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                             }
-                           
+
                         </div>
                     </div>
                     {/* <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
@@ -968,11 +968,20 @@ export default function SubjectQuestionForm() {
                                             <label htmlFor={`time-limit-${q.id}`} className="block text-sm font-medium text-gray-700 mb-1">Time Limit (seconds)</label>
                                             <input
                                                 id={`time-limit-${q.id}`}
-                                                type="number"
+                                                type="text"
                                                 placeholder="e.g., 30"
                                                 className="w-full border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
                                                 value={q.timeLimit}
-                                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleQuestionChange(q.id, 'timeLimit', e.target.value)}
+                                            
+
+                                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                                    const val = e.target.value;
+                                                    if (/^\d*$/.test(val)) { // ✅ allow only digits (0–9) or empty
+                                                        handleQuestionChange(q.id, 'timeLimit', e.target.value)
+                                                    }
+                                                }
+
+                                                }
                                             />
                                         </div>
 
@@ -980,11 +989,20 @@ export default function SubjectQuestionForm() {
                                             <label htmlFor={`points-${q.id}`} className="block text-sm font-medium text-gray-700 mb-1">Points</label>
                                             <input
                                                 id={`points-${q.id}`}
-                                                type="number"
+                                                type="text"
                                                 placeholder="e.g., 10"
                                                 className="w-full border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
                                                 value={q.points}
-                                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleQuestionChange(q.id, 'points', e.target.value)}
+                                               
+                                                onMouseDownCapture={(e) => e.preventDefault()}
+                                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                                    const val = e.target.value;
+                                                    if (/^\d*$/.test(val)) { // ✅ allow only digits (0–9) or empty
+                                                        handleQuestionChange(q.id, 'points', e.target.value)
+                                                    }
+                                                }
+
+                                                }
                                             />
                                         </div>
 
@@ -1023,7 +1041,7 @@ export default function SubjectQuestionForm() {
                             </div>
                         ))}
                     </div>
-                        {/* // */}
+                    {/* // */}
                 </div>
 
                 {/* Collapsed State - Show Expand Button */}

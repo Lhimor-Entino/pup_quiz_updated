@@ -12,7 +12,8 @@ class PreRegistration extends Model
         'status',
         'participant_id',
         'lobby_id',
-        'comment'
+        'comment',
+        'user_id'
     ];
 
     public function lobby()

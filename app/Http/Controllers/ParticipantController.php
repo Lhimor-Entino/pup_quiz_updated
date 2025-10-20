@@ -12,6 +12,7 @@ use App\Models\Subjects;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -83,7 +84,7 @@ class ParticipantController extends Controller
         }
         return 1;
     }
-    public function shortAnswer($id)
+    public function shortAnswer($id,$subject_id)
     {
         $lobby = Lobby::find($id); // simpler than where(...)->first()
 
@@ -93,6 +94,7 @@ class ParticipantController extends Controller
 
         $participants = Participants::where([
             ['lobby_code', '=', $lobby->lobby_code],
+             ['subject_id', '=',$subject_id],
             ['archive', '=', 1],
         ])->get();
 
@@ -153,6 +155,7 @@ class ParticipantController extends Controller
 
             // Example insert (replace with your actual model and logic)
             $participant = PreRegistration::create([
+                "user_id"=>Auth::user()->id,
                 'status' => $request->status,
                 'participant_id' => $request->participant_id,
                 'lobby_id' => $request->lobby_id,
@@ -192,7 +195,34 @@ class ParticipantController extends Controller
     public function currentQuestionLeaderboard($id, $question_id)
     {
 
-        SubjectQuestion::where('id', $question_id)->update([
+        // SubjectQuestion::where('id', $question_id)->update([
+        //     'archive' => '1',
+        // ]);
+
+        // $subQuery = DB::table('points_history')
+        //     ->select(DB::raw('MAX(created_at) as latest_created_at'), 'participant_id')
+        //     ->where('lobby_id', $id)
+        //     ->where('question_id', $question_id)
+        //     ->groupBy('participant_id');
+
+        // $history = DB::table('points_history as ph')
+        //     ->joinSub($subQuery, 'latest', function ($join) {
+        //         $join->on('ph.participant_id', '=', 'latest.participant_id')
+        //             ->on('ph.created_at', '=', 'latest.latest_created_at');
+        //     })
+        //     ->join('participants as p', 'ph.participant_id', '=', 'p.id')
+        //     ->where('ph.lobby_id', $id)
+        //     ->where('ph.question_id', $question_id)
+        //     ->orderBy('ph.points', 'desc') // ✅ sort by points descending
+        //     ->select(
+        //         'ph.*',
+        //         'p.team as participant_name'
+        //     )
+        //     ->get();
+
+        // return $history;
+
+            SubjectQuestion::where('id', $question_id)->update([
             'archive' => '1',
         ]);
 
@@ -429,7 +459,7 @@ public function store(Request $request)
 
         // ✅ 6. Save participant
         $user = Participants::create([
-            'team' => $request->input("teamName") ?? $team,
+            'team' => $request->input("team") ?? $team,
             'members' => json_encode($membersData),
             "lobby_code" => $request->input("lobbyCode"),
             "team_leader" => $request->input("team_leader"),

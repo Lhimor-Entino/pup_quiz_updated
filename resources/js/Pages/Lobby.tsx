@@ -125,7 +125,7 @@ const Lobby = () => {
         // Make the GET request. Crucially, set responseType to 'blob'
         // This tells axios to expect binary data and return it as a Blob object.
   
-        const response = await axios.get(`/report/teams/excel/${id}`, {
+        const response = await axios.get(`/report/teams/excel/${id}/${subject_id}`, {
           responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
         });
   
