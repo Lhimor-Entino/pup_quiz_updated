@@ -6,7 +6,7 @@ import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Clock, Star, Trophy, User, Users } from 'lucide-react';
+import { Clock, Star, Trophy, User, UserCircle2Icon, Users } from 'lucide-react';
 import LeaderboardModal from '@/CustomComponents/LeaderboardModal';
 type Props = {
   quizTitle?: string;
@@ -73,7 +73,7 @@ const Lobby = () => {
   const handleStartQuiz = async () => {
     setLoading(true)
     try {
-       await axios.get(`/clear-prev-data/${id}/${subject_id}`)
+      await axios.get(`/clear-prev-data/${id}/${subject_id}`)
       const response = await axios.get(`/lobby-start/${id}`)
 
       if (response.data == 1) {
@@ -118,6 +118,91 @@ const Lobby = () => {
       console.log(error)
     }
   }
+  const [savingShortAns,setSavingShortAns] = useState(false)
+  const handleGenerateReport = async () => {
+      setSavingShortAns(true); // Indicate that a process is starting (downloading)
+      try {
+        // Make the GET request. Crucially, set responseType to 'blob'
+        // This tells axios to expect binary data and return it as a Blob object.
+  
+        const response = await axios.get(`/report/teams/excel/${id}`, {
+          responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
+        });
+  
+        // Check if the response is successful
+        if (response.status === 200) {
+          // --- Extract Filename (Optional but Recommended) ---
+          // Try to get the filename from the Content-Disposition header
+          let filename = 'teams_report.xlsx'; // Default filename if header is not present
+          const contentDisposition = response.headers['content-disposition'];
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1];
+            }
+          }
+  
+          // --- Create a Download Link ---
+          // Create a URL for the Blob data
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+  
+          // Create a temporary <a> tag
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', filename); // Set the download attribute with the filename
+          document.body.appendChild(link); // Append to body (required for Firefox)
+          link.click(); // Programmatically click the link to trigger download
+          link.remove(); // Clean up the temporary link
+  
+          // Revoke the object URL to free up memory
+          window.URL.revokeObjectURL(url);
+  
+          // Show success message
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success', // Changed to success icon for download
+            title: 'Report downloaded successfully!', // Appropriate message
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            background: '#fff',
+            color: '#399918',
+            iconColor: '#399918',
+          });
+        } else {
+          // Handle non-200 responses if necessary
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: `Download failed: ${response.status}`,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            background: '#fff',
+            color: '#dc3545',
+            iconColor: '#dc3545',
+          });
+        }
+      } catch (error) {
+        console.error('Error during report download:', error);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'An error occurred during download.',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: '#fff',
+          color: '#dc3545',
+          iconColor: '#dc3545',
+        });
+      } finally {
+        setSavingShortAns(false); // Reset loading state
+      }
+    };
   return (
     <AuthenticatedLayout>
       <Head title="Event Rooms Lobby" />
@@ -159,7 +244,7 @@ const Lobby = () => {
               </div>
             </div>}
           {/* Enhanced Teams Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
 
             {teams?.map((team, index) => {
               const isHovered = hoveredTeam === index;
@@ -192,8 +277,15 @@ const Lobby = () => {
                           <span>{JSON.parse(team.members).length} members</span>
                         </div>
                       </div>
-                    </div>
 
+                    </div>
+                    <div className="flex-1 pl-3 flex items-center  gap-x-2">
+                      <UserCircle2Icon className='text-orange-800 w-8 h-8' />
+                      <h3 className="text-md font-bold text-orange-900 group-hover:text-orange-800 transition-colors duration-300">
+                        {team.team_leader}
+                      </h3>
+
+                    </div>
                     {/* Members List with enhanced styling */}
                     <div className="space-y-3">
                       {JSON.parse(team.members).map((member, mIndex) => (
@@ -202,7 +294,7 @@ const Lobby = () => {
                           className="group/member flex items-center gap-3 p-3 rounded-xl hover:bg-orange-50/60 transition-all duration-300 cursor-pointer"
                         >
                           {/* Member Avatar */}
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-md group-hover/member:shadow-lg transition-shadow duration-300">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-md group-hover/member:shadow-lg transition-shadow duration-300">
                             <span className="text-white text-sm font-bold">
                               {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </span>
@@ -292,10 +384,21 @@ const Lobby = () => {
 
 
           )}
-          <div className='flex justify-center mt-10'>
-            <Button onClick={() => getLeaderboard()} className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
-              Show Leaderboard
-            </Button>
+
+          <div className='flex justify-center space-x-10 mt-5'>
+            <div className='flex justify-center mt-10'>
+              <Button onClick={() => getLeaderboard()}className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
+                Show Leaderboard
+              </Button>
+            </div>
+            <div className='flex justify-center mt-10'>
+              <Button disabled={savingShortAns} onClick={() => handleGenerateReport()} className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
+                {
+                  savingShortAns ? " Downloading ...":" Generate Report"
+                }
+               
+              </Button>
+            </div>
           </div>
 
           <LeaderboardModal

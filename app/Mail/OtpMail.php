@@ -51,7 +51,11 @@ class OtpMail extends Mailable
     public function build()
     {
         return $this->subject($this->subject_line)
-            ->view('emails.otp');
+            ->view('emails.otp')->with([
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'body' => $this->body,
+                ]);
     }
     /**
      * Get the attachments for the message.

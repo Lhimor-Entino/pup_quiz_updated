@@ -866,7 +866,7 @@ export default function SubjectQuestionForm() {
                                             />
                                         </div>
 
-                                        <div className="mb-3">
+                                        {/* <div className="mb-3">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
                                             <select
                                                 // disabled={true}
@@ -878,10 +878,10 @@ export default function SubjectQuestionForm() {
                                                 <option value="true-false">True/False</option>
                                                 <option value="short-answer">Short Answer</option>
                                             </select>
-                                        </div>
+                                        </div> */}
 
                                         {/* New: Difficulty Level Selection */}
-                                        <div className="mb-3">
+                                        {/* <div className="mb-3">
                                             <label htmlFor={`difficulty-${q.id}`} className="block text-sm font-medium text-gray-700 mb-1">Difficulty Level</label>
                                             <select
                                                 // disabled={true}
@@ -894,7 +894,7 @@ export default function SubjectQuestionForm() {
                                                 <option value="average">Average</option>
                                                 <option value="hard">Hard</option>
                                             </select>
-                                        </div>
+                                        </div> */}
 
                                         {q.type === 'multiple-choice' && (
                                             <div className="mb-3">

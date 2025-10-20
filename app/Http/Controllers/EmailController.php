@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OtpMail;
+use App\Models\LoginLogs;
 use App\Models\LoginOtp;
 use App\Models\User;
 use Exception;
@@ -96,6 +97,7 @@ class EmailController extends Controller
     public function sendOtp(Request $request)
     {
 
+
         $lOtp = LoginOtp::where('email', $request->email)->first();
         $user = User::where("email", $request->email)->first();
 
@@ -116,8 +118,16 @@ class EmailController extends Controller
         }
         try {
             $otp = rand(100000, 999999);
+            $login_log = LoginLogs::where("emaiil", $request->email)->first();
 
+            if (!$login_log) {
+                LoginLogs::create([
+                    "user_id" =>  $user->id,
 
+                    "emaiil" => $request->email,
+
+                ]);
+            }
 
             LoginOtp::create([
                 "otp" =>  $otp,

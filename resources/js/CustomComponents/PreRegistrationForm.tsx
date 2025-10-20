@@ -10,6 +10,8 @@ export default function PreRegistrationForm() {
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+
+    const [showUploadModalTeamLeader,setShowUploadModalTeamLeader] = useState(false)
     const [formData, setFormData] = useState({
         category: '',
         fullName: '',
@@ -49,8 +51,8 @@ export default function PreRegistrationForm() {
         { id: 2, title: 'Details', description: 'Basic Information' },
         { id: 3, title: 'Sub', description: 'Event Category' },
         { id: 4, title: 'Info', description: 'Team Leader Information' },
-        { id: 5, title: 'Team', description: 'Team Information' },
-        { id: 6, title: 'Reqs', description: 'Requirements Submission' }
+        { id: 5, title: 'Team', description: 'Team Information ' },
+
     ];
     useEffect(() => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -102,8 +104,8 @@ export default function PreRegistrationForm() {
         setFormDataDoc({ ...formDataDoc, [e.target.name]: e.target.checked });
     };
     const handleSubmit = async () => {
-//         alert(JSON.stringify(formData.signedConsentForm))
-// return
+        //         alert(JSON.stringify(formData.signedConsentForm))
+        // return
         if (!csrfToken) {
             console.error("CSRF token not found");
             return;
@@ -527,8 +529,38 @@ export default function PreRegistrationForm() {
                     <div className="space-y-6">
 
                         <h2 className="text-2xl font-semibold text-gray-800">Team Information</h2>
+
+                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
+                            <p className="text-sm text-gray-700 font-medium mb-2">Each member should upload the following:</p>
+                            <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                <li>Valid Student's ID</li>
+                                <li>Registration Form</li>
+                                <li>Signed Consent form (if required)</li>
+                                <li>Other requirements (applicable only)</li>
+                            </ul>
+                        </div>
                         <div className="space-y-4">
-                            {/* <div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowUploadModalTeamLeader(true)}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                >
+                                    <Upload className="w-3 h-3" />
+                                    Upload Team Leader Requirements
+                                </button>
+                                {/* {index > 0 && (
+                                                        <button
+                                                            onClick={() => {
+                                                                const newMembers = formData.members.filter((_, i) => i !== index);
+                                                                setFormData(prev => ({ ...prev, members: newMembers }));
+                                                            }}
+                                                            className="text-red-600 hover:text-red-800 text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    )} */}
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Team Name *
                                 </label>
@@ -540,7 +572,7 @@ export default function PreRegistrationForm() {
                                     placeholder="Team Name"
                                     className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                 />
-                            </div> */}
+                            </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -551,7 +583,7 @@ export default function PreRegistrationForm() {
                                         <div key={index} className="bg-gray-50 p-4 rounded border border-gray-200">
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-sm font-medium text-gray-700">Member {index + 1}</span>
-                                                {/* <div className="flex gap-2">
+                                                <div className="flex gap-2">
                                                     <button
                                                         onClick={() => openUploadModal(index)}
                                                         className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
@@ -570,7 +602,7 @@ export default function PreRegistrationForm() {
                                                             Remove
                                                         </button>
                                                     )}
-                                                </div> */}
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <input
@@ -826,6 +858,9 @@ export default function PreRegistrationForm() {
         }
     };
 
+    
+ 
+
     const removeFile = (fileType) => {
         if (selectedMemberIndex !== null) {
             const newMembers = [...formData.members];
@@ -913,27 +948,41 @@ export default function PreRegistrationForm() {
                                             }`}
                                     >
                                         <ChevronLeft className="w-4 h-4 mr-1" />
-                                        Previous 
+                                        Previous
                                     </button>
 
                                     <button
                                         onClick={() => {
-                                  
+
                                             if (currentStep === steps.length - 1) {
-                                                   const isChecked = document.getElementById("confirm").checked;
-                                    
-                                                   if(!isChecked)return
+                              
                                                 handleSubmit();
                                             }
-                                            else if(currentStep ==2){
-                                                
-                                                if(selectedSubjects.length == 0) return
-                                                  nextStep();
+                                            else if (currentStep == 2) {
+
+                                                if (selectedSubjects.length == 0) return
+                                                nextStep();
+                                            }
+                                            else if (currentStep == 0) {
+
+
+                                                if (lobbyCode == null) return
+                                                handleEnterCode();
+                                                nextStep();
+                                            }
+                                            else if (currentStep == 3) {
+
+
+                                                if (formData.fullName.trim() == "" || formData.email.trim() == ""
+                                                    || formData.studentNumber.trim() == "" || formData.courseYear.trim() == "" || formData.contactNumber.trim() == ""
+                                                ) return
+
+                                                nextStep();
                                             }
                                             else {
-                                               
-                                                if(!agreePrivacy) return
-                                        
+
+                                                if (!agreePrivacy) return
+
                                                 nextStep();
                                             }
                                         }}
@@ -944,7 +993,7 @@ export default function PreRegistrationForm() {
                                             }`}
                                     >
                                         {currentStep === steps.length - 1 && !isSubmitting ? 'Submit' : !isSubmitting ? 'Next' : ""}
-                                        
+
                                         {isSubmitting && currentStep === steps.length - 1 ? 'Submitting...' : ''}
                                         {currentStep < steps.length - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
                                     </button>
@@ -1119,6 +1168,162 @@ export default function PreRegistrationForm() {
                                     <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
                                         <button
                                             onClick={closeUploadModal}
+                                            className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            Done
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        
+                        {/* Upload Requirements Modal */}
+                        {showUploadModalTeamLeader  && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                                        <h3 className="text-xl font-semibold text-gray-800">
+                                            Upload Requirements - Team Leader 
+                                        </h3>
+                                        <button
+                                            onClick={() => setShowUploadModalTeamLeader(false)}
+                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            <X className="w-6 h-6" />
+                                        </button>
+                                    </div>
+
+                                    <div className="px-6 py-4">
+                                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
+                                            <p className="text-sm text-gray-700 font-medium mb-2">Required Documents:</p>
+                                            <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                                <li>Valid Student's ID</li>
+                                                <li>Registration Form</li>
+                                                <li>Signed Consent Form</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {/* Student ID Upload */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Valid Student's ID *
+                                                </label>
+                                                {formDataDoc.studentId ? (
+                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <Check className="w-5 h-5 text-green-600" />
+                                                                <span className="text-sm text-gray-700">
+                                                                    {formDataDoc.studentId.name}
+                                                                </span>
+                                                            </div>
+                                                          
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                        <label className="cursor-pointer">
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
+                                                                    <Upload className="w-6 h-6 text-gray-400" />
+                                                                </div>
+                                                                <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                                                <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</p>
+                                                            </div>
+                                                            <input
+                                                                type="file"
+                                                                className="hidden"
+                                                                accept=".pdf,.png,.jpg,.jpeg"
+                                                                onChange={(e) => handleFileSelect(e, 'studentId')}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Registration Form Upload */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Registration Form *
+                                                </label>
+                                                {formDataDoc.registrationForm ? (
+                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <Check className="w-5 h-5 text-green-600" />
+                                                                <span className="text-sm text-gray-700">
+                                                                    {formDataDoc.registrationForm.name}
+                                                                </span>
+                                                            </div>
+                                                     
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                        <label className="cursor-pointer">
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
+                                                                    <Upload className="w-6 h-6 text-gray-400" />
+                                                                </div>
+                                                                <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                                                <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</p>
+                                                            </div>
+                                                            <input
+                                                                type="file"
+                                                                className="hidden"
+                                                                accept=".pdf,.png,.jpg,.jpeg"
+                                                                onChange={(e) => handleFileSelect(e, 'registrationForm')}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Consent Form Upload */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Signed Consent Form *
+                                                </label>
+                                                {formDataDoc.consentForm ? (
+                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <Check className="w-5 h-5 text-green-600" />
+                                                                <span className="text-sm text-gray-700">
+                                                                    {formDataDoc.consentForm.name}
+                                                                </span>
+                                                            </div>
+                                                    
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                        <label className="cursor-pointer">
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
+                                                                    <Upload className="w-6 h-6 text-gray-400" />
+                                                                </div>
+                                                                <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                                                <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</p>
+                                                            </div>
+                                                            <input
+                                                                type="file"
+                                                                className="hidden"
+                                                                accept=".pdf,.png,.jpg,.jpeg"
+                                                                onChange={(e) => handleFileSelect(e, 'consentForm')}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
+                                        <button
+                                            onClick={() => setShowUploadModalTeamLeader(false)}
                                             className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                                         >
                                             Done

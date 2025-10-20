@@ -13,6 +13,7 @@ use App\Http\Controllers\OrganizerRegistrationController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\LiveQuizSessionController;
 use App\Http\Controllers\LobbyController;
+use App\Http\Controllers\LoginLogsController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\QuizEventController;
 use App\Http\Controllers\ReportController;
@@ -534,7 +535,7 @@ Route::post('/participant-answer-update', [ParticipantController::class, 'update
 
 Route::get('/report/teams/excel/{lobby_id}', [ReportController::class, 'downloadTeamsReport']);
 
-
+Route::post('/login-info', [LoginLogsController::class, 'isFirstLogin'])->name('login-info');
 
 Route::prefix('api/live-quizzes/{quiz}')->middleware('auth:sanctum')->group(function () {
     Route::get('session', [LiveQuizSessionController::class, 'getSessionState']);

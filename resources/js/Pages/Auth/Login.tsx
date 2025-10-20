@@ -9,6 +9,7 @@ import OTPModal from '@/CustomComponents/OtpModal';
 import GuestLayout from '@/Layouts/GuestLayout';
 
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import axios from 'axios';
 import { Home } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -26,29 +27,58 @@ export default function Login({
         password: '',
         remember: false as boolean,
     });
-    const [openOTPModal,setOpenOTPModal] = useState(false)
-    const submit: FormEventHandler = (e) => {
+    const [openOTPModal, setOpenOTPModal] = useState(false)
+    const submit: FormEventHandler = async (e) => {
         e.preventDefault();
 
-        post(route('otp-login'), {
-            onFinish: () => reset('password'),
-            onSuccess: () => {setOpenOTPModal(true); localStorage.setItem("email",data.email)},
-            onError: (errors) => {
+        try {
+            // 🟡 First query — check account before login
+            const response = await axios.post(route('login-info'), { email: data.email });
+
+            const first_login = response.data.exist
+
+            post(first_login ? route('login') : route('otp-login'), {
+                onFinish: () => reset('password'),
+                onSuccess: () => {
+
+                    if (!first_login) {
+                        setOpenOTPModal(true); localStorage.setItem("email", data.email)
+                    }
+
+                },
+                onError: (errors) => {
                     // If backend sent JSON with "msg"
-            let message = "Incorrect email or password";
+                    let message = "Incorrect email or password";
 
-            // Inertia puts plain JSON under errors.response if it's not a validation error
-            if (errors && typeof errors === "object") {
-                if (errors.msg) {
-                    message = errors.msg;
-                }
-            }
+                    // Inertia puts plain JSON under errors.response if it's not a validation error
+                    if (errors && typeof errors === "object") {
+                        if (errors.msg) {
+                            message = errors.msg;
+                        }
+                    }
 
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: message,
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        background: '#fff',
+                        color: '#e3342f',
+                        iconColor: '#e3342f',
+                    });
+                },
+            });
+        }
+        catch (error) {
+            // 🔴 Handle network or backend error
             Swal.fire({
                 toast: true,
                 position: 'top-end',
                 icon: 'error',
-                title: message,
+                title: 'Server error while checking account',
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true,
@@ -56,22 +86,21 @@ export default function Login({
                 color: '#e3342f',
                 iconColor: '#e3342f',
             });
-            },
-        });
+        }
     };
 
     return (
         <GuestLayout>
             <Head title="Log in" />
 
-            <OTPModal isOpen={openOTPModal} setIsOpen={setOpenOTPModal}  />
+            <OTPModal isOpen={openOTPModal} setIsOpen={setOpenOTPModal} />
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit} style={{zIndex:10}} className="z-50 bg-transparent p-8 rounded-3xl shadow-lg max-w-md w-full mx-auto">
+            <form onSubmit={submit} style={{ zIndex: 10 }} className="z-50 bg-transparent p-8 rounded-3xl shadow-lg max-w-md w-full mx-auto">
                 {/* Red accent line at the top */}
                 <div className="w-full h-2 bg-[#FF2C19] rounded-full mb-8"></div>
 
@@ -130,32 +159,32 @@ export default function Login({
                         )}
                     </div>
                     <div className='flex justify-center flex-col items-center gap-y-5'>
-                    <PrimaryButton
-                        className=" w-4/5 bg-red-600 text-white px-8 py-4 rounded-[50px] hover:bg-red-600 transition-colors mt-8 text-xl font-semibold text-center flex justify-center items-center"
-                        style={{
-                            boxShadow: '0px 8px 15px rgba(249, 115, 22, 0.35)',
-                            filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.15))',
-                            zIndex: 10,
-                        }}
-                        disabled={processing}
-                    >
-                        Login
-                    </PrimaryButton>
+                        <PrimaryButton
+                            className=" w-4/5 bg-red-600 text-white px-8 py-4 rounded-[50px] hover:bg-red-600 transition-colors mt-8 text-xl font-semibold text-center flex justify-center items-center"
+                            style={{
+                                boxShadow: '0px 8px 15px rgba(249, 115, 22, 0.35)',
+                                filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.15))',
+                                zIndex: 10,
+                            }}
+                            disabled={processing}
+                        >
+                            Login
+                        </PrimaryButton>
 
-                    <Button className=" w-4/5 px-8 py-4 flex items-center justify-center gap-x-3" variant={"link"} type={"button"} 
-                    onClick={() => 
-                        router.get("/")
-                    }>
-                        <Home />
-                        Home
-                    </Button>
+                        <Button className=" w-4/5 px-8 py-4 flex items-center justify-center gap-x-3" variant={"link"} type={"button"}
+                            onClick={() =>
+                                router.get("/")
+                            }>
+                            <Home />
+                            Home
+                        </Button>
                     </div>
 
                 </div>
             </form>
 
-            <div style={{zIndex:100}}>
-            <Footer />
+            <div style={{ zIndex: 100 }}>
+                <Footer />
             </div>
 
 

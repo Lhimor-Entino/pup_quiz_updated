@@ -65,7 +65,7 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping
             $team->lobby_code,
             $this->rankCounter,
             $team->team,
-            $team->score,
+            $team->score == 0 ? "0" : $team->score,
             $team->updated_at,
         ];
     }

@@ -82,74 +82,74 @@ function ManagePreRegistration({ }: Props) {
         });
     }
 
-   const handleManage = async (action: "Reject" | "Approved", participant_id: string) => {
-    const { value: comment } = await Swal.fire({
-        title: `${action} Participant`,
-        input: "textarea",
-        inputLabel: "Enter your comment (optional)",
-        inputPlaceholder: "Write your comment here...",
-        inputAttributes: {
-            "aria-label": "Write your comment here",
-        },
-        showCancelButton: true,
-        confirmButtonText: `Yes, ${action}`,
-        cancelButtonText: "Cancel",
-        icon: action === "Reject" ? "warning" : "question",
-        confirmButtonColor: action === "Reject" ? "#d33" : "#3085d6",
-    });
-
-    // Cancelled
-    if (comment === undefined) return;
-
-    const formData = new FormData();
-    formData.append("lobby_id", lobby.id);
-    formData.append("status", action === "Reject" ? "1" : "2");
-    formData.append("participant_id", participant_id);
-    formData.append("comment", comment || "");
-
-    try {
-        // 🌀 Show loader before the request
-        Swal.fire({
-            title: "Please wait...",
-            text: `${action =="Approved" ? "Approv" :action  }ing participant...`,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
+    const handleManage = async (action: "Reject" | "Approved", participant_id: string) => {
+        const { value: comment } = await Swal.fire({
+            title: `${action} Participant`,
+            input: "textarea",
+            inputLabel: "Enter your comment (optional)",
+            inputPlaceholder: "Write your comment here...",
+            inputAttributes: {
+                "aria-label": "Write your comment here",
             },
+            showCancelButton: true,
+            confirmButtonText: `Yes, ${action}`,
+            cancelButtonText: "Cancel",
+            icon: action === "Reject" ? "warning" : "question",
+            confirmButtonColor: action === "Reject" ? "#d33" : "#3085d6",
         });
 
-        const response = await axios.post("/manage-pre-registration", formData);
+        // Cancelled
+        if (comment === undefined) return;
 
-        // Close loader
-        Swal.close();
+        const formData = new FormData();
+        formData.append("lobby_id", lobby.id);
+        formData.append("status", action === "Reject" ? "1" : "2");
+        formData.append("participant_id", participant_id);
+        formData.append("comment", comment || "");
 
-        if (response.data.success) {
-            document.getElementById(`pre-reg-${participant_id}`)?.remove();
-
-            await Swal.fire({
-                icon: "success",
-                title: "Success!",
-                text: response.data.message,
-                confirmButtonColor: "#3085d6",
+        try {
+            // 🌀 Show loader before the request
+            Swal.fire({
+                title: "Please wait...",
+                text: `${action == "Approved" ? "Approv" : action}ing participant...`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
             });
-        } else {
+
+            const response = await axios.post("/manage-pre-registration", formData);
+
+            // Close loader
+            Swal.close();
+
+            if (response.data.success) {
+                document.getElementById(`pre-reg-${participant_id}`)?.remove();
+
+                await Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: response.data.message,
+                    confirmButtonColor: "#3085d6",
+                });
+            } else {
+                await Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: response.data.message || "Something went wrong.",
+                });
+            }
+        } catch (error: any) {
+            Swal.close();
+            console.error(error.response?.data || error.message);
+
             await Swal.fire({
                 icon: "error",
-                title: "Error",
-                text: response.data.message || "Something went wrong.",
+                title: "Request Failed",
+                text: error.response?.data?.message || "Unable to process the request.",
             });
         }
-    } catch (error: any) {
-        Swal.close();
-        console.error(error.response?.data || error.message);
-
-        await Swal.fire({
-            icon: "error",
-            title: "Request Failed",
-            text: error.response?.data?.message || "Unable to process the request.",
-        });
-    }
-};
+    };
 
     // Function to handle viewing files
     const handleViewFiles = (files) => {
@@ -164,52 +164,70 @@ function ManagePreRegistration({ }: Props) {
                 confirmButtonColor: '#16a34a'
             });
             return;
-        }
+        }// group files by person name in parentheses, e.g. "(John)"
+const grouped = files.reduce((acc, file) => {
+  const match = file.name.match(/\((.*?)\)/); // extract text inside parentheses
+  const personName = match ? match[1] : 'Unknown'; // default fallback
+
+  if (!acc[personName]) acc[personName] = [];
+  acc[personName].push(file);
+  return acc;
+}, {});
 
         // Generate HTML content for multiple files
-        const filesHTML = files.map((file, index) => {
-            if (file.type === 'pdf' || file.url.toLowerCase().endsWith('.pdf')) {
-                return `
-                <div class="mb-4 pb-4 border-b last:border-b-0">
-                    <h4 class="font-semibold text-gray-700 mb-2">${file.name || 'Document ' + (index + 1)}</h4>
-                    <iframe 
-                        src="${file.url}" 
-                        width="100%" 
-                        height="500px" 
-                        style="border: 1px solid #ddd; border-radius: 8px;"
-                    ></iframe>
-                    <a href="${file.url}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                        Open in New Tab
-                    </a>
-                </div>
-            `;
-            } else if (file.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.url)) {
-                return `
-                <div class="mb-4 pb-4 border-b last:border-b-0">
-                    <h4 class="font-semibold text-gray-700 mb-2">${file.name || 'Image ' + (index + 1)}</h4>
-                    <img 
-                        src="${file.url}" 
-                        alt="${file.name || 'Image'}" 
-                        style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-                    />
-                    <a href="${file.url}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                        View Full Size
-                    </a>
-                </div>
-            `;
-            } else {
-                return `
-                <div class="mb-4 pb-4 border-b last:border-b-0">
-                    <h4 class="font-semibold text-gray-700 mb-2">${file.name || 'File ' + (index + 1)}</h4>
-                    <p class="text-gray-600 mb-2">File type not supported for preview</p>
-                    <a href="${file.url}" target="_blank" class="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                        Download File
-                    </a>
-                </div>
-            `;
-            }
-        }).join('');
+    const filesHTML = Object.entries(grouped).map(([personName, personFiles]) => {
+  const fileCards = personFiles.map((file, index) => {
+    if (file.type === 'pdf' || file.url.toLowerCase().endsWith('.pdf')) {
+      return `
+        <div class="w-1/3 p-2 text-center">
+          <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
+          <iframe 
+            src="${file.url}" 
+            width="100%" 
+            height="300px" 
+            style="border: 1px solid #ddd; border-radius: 8px;"
+          ></iframe>
+          <a href="${file.url}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+            Open in New Tab
+          </a>
+        </div>
+      `;
+    } else if (file.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.url)) {
+      return `
+        <div class="w-1/3 p-2 text-center">
+          <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
+          <img 
+            src="${file.url}" 
+            alt="${file.name}" 
+            style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+          />
+          <a href="${file.url}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+            View Full Size
+          </a>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="w-1/3 p-2 text-center">
+          <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
+          <p class="text-gray-600 mb-2">File type not supported for preview</p>
+          <a href="${file.url}" target="_blank" class="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+  }).join('');
 
+  return `
+    <div class="mb-8 pb-4 border-b">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">${personName}</h3>
+      <div class="flex flex-wrap -m-2">
+        ${fileCards}
+      </div>
+    </div>
+  `;
+}).join('');
         Swal.fire({
             title: 'View Files',
             html: `
@@ -323,7 +341,10 @@ function ManagePreRegistration({ }: Props) {
                                                     className='bg-green-600 hover:bg-green-800'
                                                     onClick={() => {
                                                         const baseURL = window.location.origin + "/";
-                                                          
+
+                                                        const membersData = JSON.parse(session.members)
+                                                        // alert(JSON.stringify(membersData))
+                                                        console.log(JSON.stringify(membersData))
                                                         // Example files array - replace with your actual data
                                                         const files = [
                                                             // {
@@ -332,21 +353,41 @@ function ManagePreRegistration({ }: Props) {
                                                             //     name: 'Registration Form.pdf'
                                                             // },
                                                             {
-                                                                url:'/storage/' + session.student_id,
+                                                                url: '/storage/' + session.student_id,
                                                                 type: 'image',
-                                                                name: 'Valid Student Id'
+                                                                name: `Valid Student ID (${session.team_leader})`
                                                             },
-                                                              {
-                                                                url:'/storage/' + session.registration_form,
+                                                            {
+                                                                url: '/storage/' + session.registration_form,
                                                                 type: 'image',
-                                                                name: 'Registration Form'
+                                                                    name: `Valid Student ID (${session.team_leader})`
                                                             },
-                                                              {
-                                                                url:'/storage/' + session.consent_form,
+                                                            {
+                                                                url: '/storage/' + session.consent_form,
                                                                 type: 'image',
-                                                                name: 'Consent Form'
+                                                                   name: `Valid Student ID (${session.team_leader})`
                                                             }
                                                         ];
+
+                                                        membersData.forEach(member => {
+                                                            files.push(
+                                                                {
+                                                                    url: '/storage/' + member.requirements.studentId,
+                                                                    type: 'image',
+                                                                    name: `Valid Student ID (${member.name})`
+                                                                },
+                                                                {
+                                                                    url: '/storage/' + member.requirements.registrationForm,
+                                                                    type: 'image',
+                                                                    name: `Registration Form (${member.name})`
+                                                                },
+                                                                {
+                                                                    url: '/storage/' + member.requirements.consentForm,
+                                                                    type: 'image',
+                                                                    name: `Consent Form (${member.name})`
+                                                                }
+                                                            );
+                                                        });
                                                         handleViewFiles(files);
                                                     }}
                                                 >

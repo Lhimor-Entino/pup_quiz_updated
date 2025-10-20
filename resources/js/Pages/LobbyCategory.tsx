@@ -184,6 +184,7 @@ export default function LobbyCategory() {
                               className="border-red-200 focus:border-red-500 focus:ring-red-500"
                               value={data.name}
                               onChange={e => setData('name', e.target.value)}
+                              required
                             />
                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                           </div>

@@ -237,13 +237,125 @@ class ParticipantController extends Controller
         return "$folder/$fileName";
     }
 
-    public function store(Request $request)
-    {
-        //
+    // public function store(Request $request)
+    // {
+    //     //
 
+    //     $validator = Validator::make($request->all(), [
+    //         // 'team' => 'required|string|max:255',
+
+    //         'validStudentId' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+    //         'signedConsentForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+    //         'registrationForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     $lobby = Lobby::where("lobby_code", $request->input("lobbyCode"))->first();
+
+    //     $subject = Subjects::where("subject_name", $request->input("subject"))
+    //         ->where("lobby_id", $lobby->id)->first();
+
+
+
+    //     $id = $lobby->id;
+    //     $subject_id = $subject->id;
+    //     $team_count = Participants::where("lobby_code", $request->input("lobbyCode"))->count();
+    //     $team = "Team " . $team_count + 1;
+    //     // Store uploaded files if they exist
+    //     $studentIdPath = $request->hasFile('validStudentId')
+    //         ? $this->moveFileToPublic($request->file('validStudentId'), 'student_ids')
+    //         : null;
+
+    //     $consentFormPath = $request->hasFile('signedConsentForm')
+    //         ?  $this->moveFileToPublic($request->file('signedConsentForm'), 'consent_forms')
+    //         : null;
+
+    //     $registrationFormPath = $request->hasFile('registrationForm')
+    //         ?  $this->moveFileToPublic($request->file('registrationForm'), 'registration_forms')
+    //         : null;
+
+    //     // Process members
+    //     $membersData = [];
+
+    //     foreach ($request->input('members', []) as $index => $member) {
+    //         $memberFiles = [];
+
+    //         if ($request->hasFile("members.$index.studentId")) {
+    //             $memberFiles['studentId'] =  $this->moveFileToPublic(
+    //                 $request->file("members.$index.studentId"),
+    //                 'members/student_ids'
+    //             );
+    //         }
+
+    //         if ($request->hasFile("members.$index.registrationForm")) {
+    //             $memberFiles['registrationForm'] =  $this->moveFileToPublic(
+    //                 $request->file("members.$index.registrationForm"),
+    //                 'members/registration_forms'
+    //             );
+    //         }
+
+    //         if ($request->hasFile("members.$index.consentForm")) {
+    //             $memberFiles['consentForm'] =  $this->moveFileToPublic(
+    //                 $request->file("members.$index.consentForm"),
+    //                 'members/consent_forms'
+    //             );
+    //         }
+
+    //         $membersData[] = [
+    //             'name' => $member['name'] ?? '',
+    //             'studentNumber' => $member['studentNumber'] ?? '',
+    //             'courseYear' => $member['courseYear'] ?? '',
+    //             'requirements' => $memberFiles,
+    //         ];
+    //     }
+
+
+    //     $user = Participants::create([
+    //         // 'team' =>  $team,
+    //         'team' => $request->input("teamName"),
+    //         'members' => json_encode($membersData), // ✅ with file paths
+    //         "lobby_code" => $request->input("lobbyCode"),
+    //         "team_leader" => $request->input("team_leader"),
+    //         "team_leader_email" => $request->input("team_leader_email"),
+    //         "subject_id" =>  $subject_id,
+    //         'joined_at' => now()->toDateTimeString(),
+    //         "student_number" => $request->input("studentNumber"),
+    //         "course_year" => $request->input("courseYear"),
+    //         "contact_number" => $request->input("contactNumber"),
+    //         "student_id" => $studentIdPath,
+    //         "consent_form" => $registrationFormPath,
+    //         "registration_form" => $registrationFormPath,
+    //     ]);
+
+
+    //     $team_id = $user->id;
+    //     $name =  $team;
+    //     $email = $request->team_leader_email;
+    //     $subject = "Congratulations You're invited for a quiz event";
+    //     $link = url("questionnaire/$id/$team_id/$subject_id");
+
+
+
+    //     // Mail::to($email)->send(new EventInvitationMail($name, $email, $subject, $link));
+
+
+    //     return response()->json([
+    //         'message' => 'Student registered successfully',
+    //         'user' => $user,
+    //         'status' => "ok"
+    //     ], 201);
+    // }
+
+public function store(Request $request)
+{
+    try {
+        // ✅ 1. Validate input
         $validator = Validator::make($request->all(), [
-            // 'team' => 'required|string|max:255',
-
             'validStudentId' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'signedConsentForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'registrationForm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -255,52 +367,53 @@ class ParticipantController extends Controller
             ], 422);
         }
 
-        $lobby = Lobby::where("lobby_code", $request->input("lobbyCode"))->first();
-
+        // ✅ 2. Find lobby and subject
+        $lobby = Lobby::where("lobby_code", $request->input("lobbyCode"))->firstOrFail();
         $subject = Subjects::where("subject_name", $request->input("subject"))
-            ->where("lobby_id", $lobby->id)->first();
-
-
+            ->where("lobby_id", $lobby->id)
+            ->firstOrFail();
 
         $id = $lobby->id;
         $subject_id = $subject->id;
+
+        // ✅ 3. Determine team name
         $team_count = Participants::where("lobby_code", $request->input("lobbyCode"))->count();
-        $team = "Team " . $team_count + 1;
-        // Store uploaded files if they exist
+        $team = "Team " . ($team_count + 1);
+
+        // ✅ 4. Handle file uploads safely
         $studentIdPath = $request->hasFile('validStudentId')
             ? $this->moveFileToPublic($request->file('validStudentId'), 'student_ids')
             : null;
 
         $consentFormPath = $request->hasFile('signedConsentForm')
-            ?  $this->moveFileToPublic($request->file('signedConsentForm'), 'consent_forms')
+            ? $this->moveFileToPublic($request->file('signedConsentForm'), 'consent_forms')
             : null;
 
         $registrationFormPath = $request->hasFile('registrationForm')
-            ?  $this->moveFileToPublic($request->file('registrationForm'), 'registration_forms')
+            ? $this->moveFileToPublic($request->file('registrationForm'), 'registration_forms')
             : null;
 
-        // Process members
+        // ✅ 5. Process members
         $membersData = [];
-
         foreach ($request->input('members', []) as $index => $member) {
             $memberFiles = [];
 
             if ($request->hasFile("members.$index.studentId")) {
-                $memberFiles['studentId'] =  $this->moveFileToPublic(
+                $memberFiles['studentId'] = $this->moveFileToPublic(
                     $request->file("members.$index.studentId"),
                     'members/student_ids'
                 );
             }
 
             if ($request->hasFile("members.$index.registrationForm")) {
-                $memberFiles['registrationForm'] =  $this->moveFileToPublic(
+                $memberFiles['registrationForm'] = $this->moveFileToPublic(
                     $request->file("members.$index.registrationForm"),
                     'members/registration_forms'
                 );
             }
 
             if ($request->hasFile("members.$index.consentForm")) {
-                $memberFiles['consentForm'] =  $this->moveFileToPublic(
+                $memberFiles['consentForm'] = $this->moveFileToPublic(
                     $request->file("members.$index.consentForm"),
                     'members/consent_forms'
                 );
@@ -314,42 +427,49 @@ class ParticipantController extends Controller
             ];
         }
 
-
+        // ✅ 6. Save participant
         $user = Participants::create([
-            'team' =>  $team,
-            'members' => json_encode($membersData), // ✅ with file paths
+            'team' => $request->input("teamName") ?? $team,
+            'members' => json_encode($membersData),
             "lobby_code" => $request->input("lobbyCode"),
             "team_leader" => $request->input("team_leader"),
             "team_leader_email" => $request->input("team_leader_email"),
-            "subject_id" =>  $subject_id,
+            "subject_id" => $subject_id,
             'joined_at' => now()->toDateTimeString(),
             "student_number" => $request->input("studentNumber"),
             "course_year" => $request->input("courseYear"),
             "contact_number" => $request->input("contactNumber"),
             "student_id" => $studentIdPath,
-            "consent_form" => $registrationFormPath,
+            "consent_form" => $consentFormPath,
             "registration_form" => $registrationFormPath,
         ]);
 
-
+        // ✅ 7. Prepare email (optional)
         $team_id = $user->id;
-        $name =  $team;
+        $name = $team;
         $email = $request->team_leader_email;
-        $subject = "Congratulations You're invited for a quiz event";
+        $subjectLine = "Congratulations! You're invited for a quiz event";
         $link = url("questionnaire/$id/$team_id/$subject_id");
 
+        // Mail::to($email)->send(new EventInvitationMail($name, $email, $subjectLine, $link));
 
-
-        // Mail::to($email)->send(new EventInvitationMail($name, $email, $subject, $link));
-
-
+        // ✅ 8. Return success
         return response()->json([
             'message' => 'Student registered successfully',
             'user' => $user,
             'status' => "ok"
         ], 201);
-    }
 
+    } catch (\Exception $e) {
+        // 🛑 Catch all runtime errors (DB, file, mail, etc.)
+        return response()->json([
+            'message' => 'An error occurred while processing your request.',
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+        ], 500);
+    }
+}
 
     public function updateScore(string $id, $score, $ans, $question, $lobby_id, $question_id, $q_type, $prev_score_ui, $new_question)
     {
