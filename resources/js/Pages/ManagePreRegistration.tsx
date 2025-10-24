@@ -1,6 +1,6 @@
-import { usePage } from '@inertiajs/react'
+import { router, usePage } from '@inertiajs/react'
 import React, { useState } from 'react';
-import { Search, User, Clock, MapPin, Calendar, Filter, Eye, Ban, FileCheck2, Hash } from 'lucide-react';
+import { Search, User, Clock, MapPin, Calendar, Filter, Eye, Ban, FileCheck2, Hash, LayoutDashboardIcon } from 'lucide-react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 import { PageProps } from '@/types';
@@ -253,14 +253,21 @@ function ManagePreRegistration({ }: Props) {
 
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
-                            {lobby.name}
-                        </h1>
-                        <p className="text-gray-600">Manage Pre Registration</p>
+                    <div className='flex items-center justify-between'>
+
+
+                        <div className="mb-8">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
+                                {lobby.name}
+                            </h1>
+                            <p className="text-gray-600">Manage Pre Registration</p>
+                        </div>
+
+                        <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
+                            <LayoutDashboardIcon />
+                            <p>Go to Dashboard</p>
+                        </div>
                     </div>
-
-
                     {/* Controls */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">

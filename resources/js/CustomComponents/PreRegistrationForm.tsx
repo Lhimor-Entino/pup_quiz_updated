@@ -111,9 +111,8 @@ export default function PreRegistrationForm() {
         // Check if any file is missing or certification is false
         const isValid =
             studentId !== null &&
-            consentForm !== null &&
-            registrationForm !== null &&
-            certification === true;
+            // consentForm !== null &&
+            registrationForm !== null
 
         if (!isValid) {
             Swal.fire({
@@ -129,8 +128,8 @@ export default function PreRegistrationForm() {
             member.studentNumber.trim() !== '' &&
             member.courseYear.trim() !== '' &&
             member.requirements.studentId !== null &&
-            member.requirements.registrationForm !== null &&
-            member.requirements.consentForm !== null
+            member.requirements.registrationForm !== null
+           // && member.requirements.consentForm !== null
         );
         if (!allMembersValid) {
             Swal.fire({
@@ -815,7 +814,7 @@ export default function PreRegistrationForm() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Registration Form *
+                                 Certificate of Registration Form *
                                 </label>
                                 <div onDragOver={handleDragOver}
                                     onDrop={(e) => handleDrop(e, "registrationForm")}
@@ -1130,7 +1129,7 @@ export default function PreRegistrationForm() {
                                             {/* Registration Form Upload */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Registration Form *
+                                                  Certificate of Registration Form *
                                                 </label>
                                                 {formData.members[selectedMemberIndex].requirements.registrationForm ? (
                                                     <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
@@ -1308,7 +1307,7 @@ export default function PreRegistrationForm() {
                                             {/* Registration Form Upload */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Registration Form *
+                                                    Certificate of Registration Form *
                                                 </label>
                                                 {formDataDoc.registrationForm ? (
                                                     <div className="border border-gray-300 rounded-lg p-4 bg-green-50 flex justify-between">

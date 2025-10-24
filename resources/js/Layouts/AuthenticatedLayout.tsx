@@ -34,12 +34,12 @@ export default function Authenticated({
             >
                 <div className="border-t border-gray-200 pt-4 px-4 flex-1">
                     <div className="mt-3 space-y-1">
-                        <button
+                        {/* <button
                             onClick={() => window.location.href = '/createquiz'}
                             className="bg-red-600 text-white px-6 py-3 rounded-md w-full shadow-lg text-lg font-semibold"
                         >
                             Create
-                        </button>
+                        </button> */}
                     </div>
 
                     {/* Links section */}

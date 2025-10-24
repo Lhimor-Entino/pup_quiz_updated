@@ -287,11 +287,28 @@ const GetStarted = (props: Props) => {
                                 </div>
                             );
 
-                            if (currentStep === 0) {
+                            // if (currentStep === 0) {
+                            //     return (
+                            //         <div
+                            //             key={option.id}
+                            //             onClick={() => {
+                            //                 setSetupType(
+                            //                     option.id as "class" | "event"
+                            //                 );
+                            //                 setCurrentStep(1);
+                            //             }}
+                            //         >
+                            //             {content}
+                            //         </div>
+                            //     );
+                            // }
+                              if (currentStep === 0) {
                                 return (
                                     <div
                                         key={option.id}
                                         onClick={() => {
+                                            if(option.id =="class") return
+                                               
                                             setSetupType(
                                                 option.id as "class" | "event"
                                             );
@@ -302,6 +319,7 @@ const GetStarted = (props: Props) => {
                                     </div>
                                 );
                             }
+
 
                             // Type Guard: Check if href exists
                             if (option.href) {

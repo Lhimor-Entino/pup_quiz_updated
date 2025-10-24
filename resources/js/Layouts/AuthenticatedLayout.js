@@ -29,7 +29,7 @@ export default function Authenticated({ header, children, }) {
                 children: _jsx("button", {
                   onClick: () => (window.location.href = "/createquiz"),
                   className:
-                    "bg-red-600 text-white px-6 py-3 rounded-md w-full shadow-lg text-lg font-semibold",
+                    "bg-red-600 text-white px-6 py-3 rounded-md w-full shadow-lg text-lg hidden font-semibold",
                   children: "Create",
                 }),
               }),
@@ -162,6 +162,7 @@ export default function Authenticated({ header, children, }) {
                         }),
                       }),
                     }),
+                    auth?.user &&
                     _jsxs(Dropdown.Content, {
                       children: [
                         _jsx(Dropdown.Link, {

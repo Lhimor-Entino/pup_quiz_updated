@@ -414,7 +414,7 @@ const Form = (props: Props) => {
               //     </div>
               //   )}
               // </div>
-              <div key={field.name} className="relative">
+              <div key={field.name} className="relative z-50">
                 <label
                   className="block text-red-500 text-lg mb-1"
                   htmlFor={field.name}

@@ -91,7 +91,7 @@ const QuizStatisticsDashboard = () => {
               <h1 className="text-3xl font-bold text-red-800 tracking-tight">Quiz Statistics Dashboard</h1>
                <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
                             <LayoutDashboardIcon />
-                            <p>Goto Dashboard</p>
+                            <p>Go to Dashboard</p>
                         </div>
             </div>
 

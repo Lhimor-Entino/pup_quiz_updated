@@ -38,6 +38,19 @@ const OrganizerLobby = (props: Props) => {
                 // Close dialog after successful submission
                 const dialogClose = document.querySelector('[data-dialog-close]') as HTMLButtonElement;
                 if (dialogClose) dialogClose.click();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Lobby Created Successfully',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: '#fff',
+                    color: '#399918',
+                    iconColor: '#399918 ',
+                });
+
             }
         });
     };
@@ -230,7 +243,7 @@ const OrganizerLobby = (props: Props) => {
                                                     {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
                                                 </div>
                                                 <div>
-                                                    <Label className="text-sm font-medium text-red-700"> Select Start Date {JSON.stringify(data.date)}</Label>
+                                                    <Label className="text-sm font-medium text-red-700"> Select Start Date </Label>
                                                     <Calendar
                                                         mode="single"
                                                         selected={data.date}

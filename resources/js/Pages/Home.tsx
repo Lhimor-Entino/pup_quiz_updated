@@ -99,6 +99,13 @@ const Home = (props: Props) => {
                 {/* Button Section */}
                 <div className="flex-1 flex flex-col items-center w-full lg:max-w-md" style={{ maxWidth: "50%" }}>
                     {/* Logo */}
+                    <div>
+                        <img
+                            src="/images/school_logo.png"
+                            alt="Logo"
+                            className="w-[80px] h-[80px] lg:w-[100px] lg:h-[100px]"
+                        />
+                    </div>
                     <div className="mb-6">
                         <img
                             src="/images/carousel/logooo.png"
