@@ -8,13 +8,15 @@ import { Label } from '@/Components/ui/label';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Swal from 'sweetalert2';
+import { Calendar } from '@/Components/ui/calendar';
 type Props = {}
 
 const OrganizerLobby = (props: Props) => {
     const { lobby } = usePage().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
-        code: ''
+        code: '',
+        date: new Date()
     });
 
     const [editingLobby, setEditingLobby] = useState<any>(null);
@@ -32,6 +34,7 @@ const OrganizerLobby = (props: Props) => {
             onSuccess: () => {
                 setData('code', '')
                 setData('name', '')
+                setData('date', null)
                 // Close dialog after successful submission
                 const dialogClose = document.querySelector('[data-dialog-close]') as HTMLButtonElement;
                 if (dialogClose) dialogClose.click();
@@ -225,6 +228,17 @@ const OrganizerLobby = (props: Props) => {
                                                         required
                                                     />
                                                     {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
+                                                </div>
+                                                <div>
+                                                    <Label className="text-sm font-medium text-red-700"> Select Start Date {JSON.stringify(data.date)}</Label>
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={data.date}
+                                                        onSelect={(e) => setData("date", new Date(e))}
+                                                        className="rounded-md border shadow-sm text-lg w-full"
+                                                        captionLayout="dropdown"
+                                                    />
+
                                                 </div>
                                                 <DialogFooter className="mt-6">
                                                     <Button
@@ -471,6 +485,17 @@ const OrganizerLobby = (props: Props) => {
                                                             onChange={e => setData('code', e.target.value)}
                                                         />
                                                         {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-sm font-medium text-red-700"> Select Start Date </Label>
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={data.date}
+                                                            onSelect={(e) => setData("date", e)}
+                                                            className="rounded-md border shadow-sm text-lg w-full"
+                                                            captionLayout="dropdown"
+                                                        />
+
                                                     </div>
                                                     <DialogFooter className="mt-6">
                                                         <Button

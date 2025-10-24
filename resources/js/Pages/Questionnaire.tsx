@@ -1,4 +1,5 @@
 import { Button } from '@/Components/ui/button';
+import { ButtonGroupSeparator } from '@/Components/ui/button-group';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -189,7 +190,8 @@ const Questionnaire = () => {
       }
       const prev_score = localStorage.getItem("prev_score")
       const new_question = localStorage.getItem("new_question")
-      const res = await axios.get(`/updateScore/${team_id}/${score}/${ans}/${currentQuestion['question']}/${id}/${currentQuestion['id']}/${currentQuestion['type']}/${prev_score}/${new_question}`)
+      const curr_question = encodeURIComponent(currentQuestion['question'])
+      const res = await axios.get(`/updateScore/${team_id}/${score}/${ans}/${curr_question}/${id}/${currentQuestion['id']}/${currentQuestion['type']}/${prev_score}/${new_question}`)
 
       if (res.data) {
         localStorage.setItem('prev_score', res.data.prev_score)
@@ -385,12 +387,13 @@ const Questionnaire = () => {
     //   return
     // }
 
-    // const type = currentQuestion['type']
+    const type = currentQuestion['type']
 
-    // if (type == "short-answer") {
-    //   updateScore(currentQuestion['points'], option)
-    //   return
-    // }
+    if (type == "short-answer") {
+      // updateScore(currentQuestion['points'], option)
+      sumbmitAlert()
+      return
+    }
 
     // if (option == "false" || option == "true") {
     //   const ans = currentQuestion['trueFalseAnswer']
@@ -686,7 +689,7 @@ const Questionnaire = () => {
         if (selectedOption == null) {
           updateScore(-1, selectedOption)
         } else {
-       
+
 
           const type = currentQuestion['type']
 
@@ -1240,75 +1243,201 @@ const Questionnaire = () => {
 
               {currentQuestion && currentQuestion["options"] && (() => {
                 try {
-                  const options = JSON.parse(currentQuestion["options"]);
-                  return options.map((option: any, index: number) => {
-                    const isSelected = selectedOption?.text === option.text;
-                    const isDisabled = !(state == "timer-started" && seconds > 0);
-                    return (
-                      <Button
-                        disabled={isDisabled}
-                        key={index}
-                        onClick={() => submitAnswer(option)}
-                        className={`
-                  ${isSelected ? 'bg-green-600 shadow-orange-200' : isDisabled ? 'bg-orange-300' : 'bg-orange-500 hover:bg-orange-600'}
-                  text-white  rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-center text-4xl capitalize font-medium p-10
-                  ${isDisabled ? 'cursor-not-allowed opacity-75' : 'hover:scale-102'}
-                  w-full break-words whitespace-normal
-                `}
-                      >
-                        {option.text}
 
-                      </Button>
+                  if (!auth.user) {
+                    const options = JSON.parse(currentQuestion["options"]);
+                    return options.map((option: any, index: number) => {
+                      const isSelected = selectedOption?.text === option.text;
+                      const isDisabled = !(state == "timer-started" && seconds > 0);
+                      return (
+                        //         <Button
+                        //           disabled={isDisabled}
+                        //           key={index}
+                        //           onClick={() => submitAnswer(option)}
+                        //           className={`
+                        //   ${isSelected ? 'bg-green-600 shadow-orange-200' : isDisabled ? 'bg-orange-300' : 'bg-orange-500 hover:bg-orange-600'}
+                        //   text-white  rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-center text-4xl capitalize font-medium p-10
+                        //   ${isDisabled ? 'cursor-not-allowed opacity-75' : 'hover:scale-102'}
+                        //   w-full break-words whitespace-normal
+                        // `}
+                        //         >
+                        //           {option.text}
 
-                    );
-                  });
+                        //         </Button>
+
+                        <Button
+                          disabled={isDisabled}
+                          key={index}
+                          onClick={() => submitAnswer(option)}
+                          className={`
+    relative group
+    ${isSelected
+                              ? 'bg-gradient-to-b from-green-400 via-green-500 to-green-600 border-green-300'
+                              : isDisabled
+                                ? 'bg-gradient-to-b from-orange-300 via-orange-400 to-orange-500 border-orange-200'
+                                : 'bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 border-orange-300'}
+    text-white rounded-2xl transition-all duration-150 text-center text-4xl capitalize font-black p-10
+    shadow-[inset_0_2px_6px_rgba(0,0,0,0.2),0_6px_16px_rgba(0,0,0,0.3)]
+    ${isDisabled
+                              ? 'cursor-not-allowed opacity-75'
+                              : 'hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.2),0_8px_20px_rgba(0,0,0,0.4)] active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.3),0_2px_4px_rgba(0,0,0,0.3)] active:translate-y-1'}
+    w-full break-words whitespace-normal border-2
+    drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]
+    tracking-wide
+  `}
+                        >
+                          {/* Glow effect on hover */}
+                          {!isDisabled && !isSelected && (
+                            <div className="absolute inset-0 bg-gradient-to-b from-yellow-300/40 to-orange-200/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100 -z-10"></div>
+                          )}
+
+                          {/* Shine overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent rounded-2xl pointer-events-none"></div>
+
+                          <span className="relative z-10">{option.text}</span>
+                        </Button>
+
+                      );
+                    });
+                  }
+
+                  return ""
+
                 } catch (error) {
                   const isDisabled = !(state == "timer-started" && seconds > 0);
                   if (currentQuestion["type"] == "true-false") {
+                    if (!auth.user) {
+                      return (
+                        //    <div className='  w-full absolute '>
+                        //        <RadioGroup onValueChange={(value) => submitAnswer(value)} className='flex p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border  border-orange-200 w-[100%]'>
 
-                    return <RadioGroup onValueChange={(value) => submitAnswer(value)} className='flex p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-orange-200 w-[100%]'>
+                        //   <div className="flex items-center justify-center flex-1 space-x-3 w-full ">
+                        //     <RadioGroupItem
+                        //       disabled={isDisabled}
 
-                      <div className="flex items-center justify-center flex-1 space-x-3 w-full">
-                        <RadioGroupItem
-                          disabled={isDisabled}
+                        //       value="true"
+                        //       id="option-one"
+                        //       className="border-orange-400 text-orange-600 focus:ring-orange-400 h-8 w-8"
+                        //     />
+                        //     <Label htmlFor="option-one" className="text-4xl font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">TRUE</Label>
+                        //   </div>
+                        //   <div className='h-30 border border-orange-700'></div>
+                        //   <div className="flex items-center justify-center flex-1 space-x-3">
+                        //     <RadioGroupItem
+                        //       disabled={isDisabled}
+                        //       value="false"
+                        //       id="option-two"
+                        //       className="border-orange-400 text-orange-600 focus:ring-orange-400 h-8 w-8"
+                        //     />
+                        //     <Label htmlFor="option-two" className="text-4xl font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">FALSE</Label>
+                        //   </div>
+                        // </RadioGroup>;
 
-                          value="true"
-                          id="option-one"
-                          className="border-orange-400 text-orange-600 focus:ring-orange-400 h-8 w-8"
-                        />
-                        <Label htmlFor="option-one" className="text-4xl font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">TRUE</Label>
-                      </div>
-                      <div className="flex items-center justify-center flex-1 space-x-3">
-                        <RadioGroupItem
-                          disabled={isDisabled}
-                          value="false"
-                          id="option-two"
-                          className="border-orange-400 text-orange-600 focus:ring-orange-400 h-8 w-8"
-                        />
-                        <Label htmlFor="option-two" className="text-4xl font-medium text-orange-700 cursor-pointer hover:text-orange-600 transition-colors">FALSE</Label>
-                      </div>
-                    </RadioGroup>;
+                        //   </div>
+                        <div className='w-full absolute'>
+                          <RadioGroup
+                            onValueChange={(value) => submitAnswer(value)}
+                            className='flex p-8 bg-gradient-to-b from-orange-600 via-orange-700 to-orange-900 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-orange-800 w-full gap-8 relative'
+                          >
+                            {/* Subtle shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
+
+                            <div className="flex items-center justify-center flex-1 relative group">
+                              <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/30 to-orange-300/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+
+                              <div className="relative flex items-center justify-center space-x-4 p-8 rounded-2xl bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 border-2 border-orange-400 shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_8px_16px_rgba(0,0,0,0.6)] active:shadow-[inset_0_4px_12px_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.6)] active:translate-y-1 transition-all duration-150 cursor-pointer w-full">
+                                <RadioGroupItem
+                                  disabled={isDisabled}
+                                  value="true"
+                                  id="option-one"
+                                  className="border-2 border-white text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-700 h-9 w-9 data-[state=checked]:bg-white data-[state=checked]:border-yellow-300 data-[state=checked]:shadow-[0_0_20px_rgba(255,255,255,0.8)] transition-all"
+                                />
+                                <Label
+                                  htmlFor="option-one"
+                                  className="text-5xl font-black text-white cursor-pointer drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] group-hover:drop-shadow-[0_4px_12px_rgba(255,255,255,0.3)] transition-all duration-300 tracking-wider select-none"
+                                >
+                                  TRUE
+                                </Label>
+                              </div>
+                            </div>
+
+                            <div className='w-[3px] bg-gradient-to-b from-transparent via-orange-400 to-transparent self-stretch rounded-full shadow-[0_0_8px_rgba(251,146,60,0.5)]'></div>
+
+                            <div className="flex items-center justify-center flex-1 relative group">
+                              <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/30 to-orange-300/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+
+                              <div className="relative flex items-center justify-center space-x-4 p-8 rounded-2xl bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 border-2 border-orange-400 shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_8px_16px_rgba(0,0,0,0.6)] active:shadow-[inset_0_4px_12px_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.6)] active:translate-y-1 transition-all duration-150 cursor-pointer w-full">
+                                <RadioGroupItem
+                                  disabled={isDisabled}
+                                  value="false"
+                                  id="option-two"
+                                  className="border-2 border-white text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-700 h-9 w-9 data-[state=checked]:bg-white data-[state=checked]:border-yellow-300 data-[state=checked]:shadow-[0_0_20px_rgba(255,255,255,0.8)] transition-all"
+                                />
+                                <Label
+                                  htmlFor="option-two"
+                                  className="text-5xl font-black text-white cursor-pointer drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] group-hover:drop-shadow-[0_4px_12px_rgba(255,255,255,0.3)] transition-all duration-300 tracking-wider select-none"
+                                >
+                                  FALSE
+                                </Label>
+                              </div>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                      )
+                    }
+
+                    return ""
 
                   } else {
-                    return <div className='absolute w-full p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-orange-200 flex gap-y-4 flex-col'>
-                      <Input
-                        disabled={shortAnswerSubmitted || state == 'timer-started' ? false : true}
-                        value={selectedOption}
-                        onChange={({ target }) => setSelectedOption(target.value)}
-                        placeholder='Enter your answer'
-                        className='border-orange-200 focus:border-orange-500 focus:ring-orange-500 text-lg'
-                      />
-                      <Button
-                        onClick={() => { submitAnswer(selectedOption); setShortAnswerSubmitted(true) }}
+                    // return <div className='absolute w-full p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-orange-200 flex gap-y-4 flex-col'>
+                    //   <Input
+                    //     disabled={shortAnswerSubmitted || state == 'timer-started' ? false : true}
+                    //     value={selectedOption}
+                    //     onChange={({ target }) => setSelectedOption(target.value)}
+                    //     placeholder='Enter your answer'
+                    //     className='border-orange-200 focus:border-orange-500 focus:ring-orange-500 text-lg'
+                    //   />
+                    //   <Button
+                    //     onClick={() => { submitAnswer(selectedOption); setShortAnswerSubmitted(true) }}
 
-                        disabled={shortAnswerSubmitted || state == 'timer-started' ? false : true}
-                        className='w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-md hover:shadow-lg transition-all duration-300'
-                      >
-                        Submit Answer
-                      </Button>
-                    </div>
+                    //     disabled={shortAnswerSubmitted || state == 'timer-started' ? false : true}
+                    //     className='w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-md hover:shadow-lg transition-all duration-300'
+                    //   >
+                    //     Submit Answer
+                    //   </Button>
+                    // </div>
+                    if (!auth.user) {
+                      return (
 
-                      ;
+                        <div className='absolute w-full p-8 bg-gradient-to-b from-orange-600 via-orange-700 to-orange-800 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-orange-800 flex gap-y-6 flex-col '>
+                          {/* Subtle shine effect */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
+
+                          <div className="relative">
+                            <Input
+                              disabled={shortAnswerSubmitted || state == 'timer-started' ? false : true}
+                              value={selectedOption}
+                              onChange={({ target }) => setSelectedOption(target.value)}
+                              placeholder='Enter your answer'
+                              className='w-full h-20 border-2 border-orange-400 bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 placeholder:text-orange-200 text-white text-2xl font-medium px-6 py-6 rounded-2xl shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_rgba(0,0,0,0.6)] focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-700 focus:border-orange-300 transition-all duration-300'
+                            />
+                          </div>
+
+                          <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/30 to-orange-300/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+
+                            <Button
+                              onClick={() => { submitAnswer(selectedOption); setShortAnswerSubmitted(true) }}
+                              disabled={shortAnswerSubmitted || state == 'timer-started' ? false : true}
+                              className='relative w-full bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 hover:from-orange-400 hover:via-orange-500 hover:to-orange-600 text-white text-2xl font-black rounded-2xl px-8 py-6 shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_8px_16px_rgba(0,0,0,0.6)] hover:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_12px_20px_rgba(0,0,0,0.8)] active:shadow-[inset_0_4px_12px_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.6)] active:translate-y-1 transition-all duration-150 border-2 border-orange-400 tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]'
+                            >
+                              SUBMIT ANSWER
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return ""
                   }
 
                 }
@@ -1418,7 +1547,11 @@ const Questionnaire = () => {
                   }
 
                   <TableHead className="w-1/2 text-orange-700 font-semibold">Total Points</TableHead>
-                  <TableHead className="w-1/4 text-orange-700 font-semibold text-right">Status</TableHead>
+                  {
+                    state == "finished" || state != "over-all-leaderboard" ?
+                      <TableHead className="w-1/4 text-orange-700 font-semibold text-right">Status</TableHead> : ""
+                  }
+
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1455,27 +1588,33 @@ const Questionnaire = () => {
                         }
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className={`text-xl font-bold py-2 px-4 ${rank.prev_answer_correct == 1 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-600 to-orange-700'} rounded-lg shadow-md ${rank.prev_answer_correct == 1 ? 'shadow-green-200' : 'shadow-orange-200'}`}>
-                        <div className='flex gap-x-2 items-center justify-center text-white'>
-                          {rank.prev_answer_correct == 1 ? (
-                            <>
-                              <CheckCheckIcon className="h-5 w-5" />
-                              <span>Correct</span>
-                            </>
-                          ) : (
-                            rank.prev_answer?.trim() == "--" || rank.prev_answer?.trim() == "" ? <>
-                              <X className="h-5 w-5" />
-                              <span className='text-center'>No Answer</span>
-                            </> :
-                              <>
-                                <X className="h-5 w-5" />
-                                <span>Incorrect</span>
-                              </>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
+
+                    {
+                      state == "finished" || state != "over-all-leaderboard" ?
+                        <TableCell className="text-right">
+
+                          <div className={`text-xl font-bold py-2 px-4 ${rank.prev_answer_correct == 1 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-600 to-orange-700'} rounded-lg shadow-md ${rank.prev_answer_correct == 1 ? 'shadow-green-200' : 'shadow-orange-200'}`}>
+                            <div className='flex gap-x-2 items-center justify-center text-white'>
+                              {rank.prev_answer_correct == 1 ? (
+                                <>
+                                  <CheckCheckIcon className="h-5 w-5" />
+                                  <span>Correct</span>
+                                </>
+                              ) : (
+                                rank.prev_answer?.trim() == "--" || rank.prev_answer?.trim() == "" ? <>
+                                  <X className="h-5 w-5" />
+                                  <span className='text-center'>No Answer</span>
+                                </> :
+                                  <>
+                                    <X className="h-5 w-5" />
+                                    <span>Incorrect</span>
+                                  </>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell> : ""
+                    }
+
                   </TableRow>
                 ))}
               </TableBody>

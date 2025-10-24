@@ -20,6 +20,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SessionLogsController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SubjectQuestionController;
+use App\Models\EndedEvent;
 use App\Models\LeaderboardLog;
 use App\Models\Lobby;
 use App\Models\LoobyManagement;
@@ -104,6 +105,13 @@ Route::get('/participant-management', function () {
 })->middleware(['auth', 'verified'])->name('participant-management');
 Route::get('/quiz-management', function () {
     $logs =  QuizManagement::with('question')->where("user_id", Auth::id())->get();
+    // $logs = QuizManagement::with([
+    //     'question' => function ($query) {
+    //         $query->where('deleted', '0');
+    //     }
+    // ])
+    //     ->where('user_id', Auth::id())
+    //     ->get();
 
     return Inertia::render('QuizManagement', [
         "logs" => $logs
@@ -176,7 +184,7 @@ Route::get('/category', function () {
 Route::get('/pre-registration', function () {
 
     try {
-        $logs =  PreRegistration::with('lobby','participant')->where("user_id",Auth::user()->id)->get();
+        $logs =  PreRegistration::with('lobby', 'participant')->where("user_id", Auth::user()->id)->get();
     } catch (\Exception $e) {
         // Return error response if something goes wrong
         return response()->json([
@@ -355,13 +363,17 @@ Route::post('/participant/verify-team', [ParticipantController::class, 'verify']
 
 Route::get('/lobby/{id}/{subject_id}/{team_id?}', function ($id, $subject_id, $team_id = 'organizer') {
     $subject = Subjects::findOrFail($subject_id);
-
+    
     if ($team_id != "organizer") {
 
         $team = Participants::findOrFail($team_id);
         $team->subject_id = $subject_id;
         $team->save();
     }
+   $event_status = EndedEvent::where('lobby_id', $id)
+    ->whereDate('created_at', Carbon::today('Asia/Manila'))
+    ->first();
+
 
 
     // $lobby = Lobby::findOrFail($id);
@@ -388,7 +400,8 @@ Route::get('/lobby/{id}/{subject_id}/{team_id?}', function ($id, $subject_id, $t
         'id' => $id,
         'subject_id' => $subject_id,
         'subject' => $subject,
-        'team_id' => $team_id
+        'team_id' => $team_id,
+        'show_leaderboard_report_btn'=>   $event_status ? 1: 0
     ]);
 })->name('lobby');
 
@@ -400,8 +413,13 @@ Route::get('/questionnaire/{id}/{team_id}/{subject_id}', function ($id, $team_id
 
     $subject = Subjects::where("id", $subject_id)->first();
     $now = Carbon::now();
-    if ($subject) {
-        $start = Carbon::parse($subject->start_date);
+
+    $lobby_event_now = Lobby::where("id", $id)
+        ->where("archive", 0)
+        ->firstOrFail();
+
+    if ($lobby_event_now) {
+        $start = Carbon::parse($lobby_event_now->start_date);
         if ($now->lessThan($start)) {
             $diff = $now->diff($start); // DateInterval object
 

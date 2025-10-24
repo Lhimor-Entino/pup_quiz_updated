@@ -6,6 +6,7 @@ use App\Events\QuizEvent;
 use App\Models\Lobby;
 use App\Models\LoobyManagement;
 use App\Models\Subjects;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -87,7 +88,7 @@ class LobbyController extends Controller
     }
     public function getLobby()
     {
-        $lobbies = Lobby::where("archive",0)->get();
+        $lobbies = Lobby::where("archive", 0)->get();
 
         return $lobbies;
     }
@@ -341,9 +342,12 @@ class LobbyController extends Controller
             ], 422);
         }
 
+             // Convert to proper format for MySQL
+        $startDate = Carbon::parse($request->input('date'))->format('Y-m-d H:i:s');
         $lobby = Lobby::create([
             'name' => $request->input('name'),
             'lobby_code' => $request->input('code'),
+            'start_date' => $startDate,
             'user_id' => Auth::user()->id
         ]);
 
@@ -354,7 +358,7 @@ class LobbyController extends Controller
         ]);
 
         return Inertia::render('OrganizerLobby', [
-            'lobby' => Lobby::where("user_id", Auth::user()->id)->where("archive",0)->get()
+            'lobby' => Lobby::where("user_id", Auth::user()->id)->where("archive", 0)->get()
         ]);
     }
 
@@ -418,7 +422,7 @@ class LobbyController extends Controller
         // return redirect()->route('organizerLobby')
         //     ->with('success', 'Lobby deleted successfully');
         return Inertia::render('OrganizerLobby', [
-            'lobby' => Lobby::where("user_id", Auth::user()->id)->where("archive",0)->get()
+            'lobby' => Lobby::where("user_id", Auth::user()->id)->where("archive", 0)->get()
         ]);
         //
     }

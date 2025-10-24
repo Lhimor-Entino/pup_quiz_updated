@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { usePage } from '@inertiajs/react';
-import { Search, User, Clock, MapPin, Calendar, Filter, Save, FilePenLineIcon, Trash2Icon } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { Search, User, Clock, MapPin, Calendar, Filter, Save, FilePenLineIcon, Trash2Icon, LayoutDashboardIcon } from 'lucide-react';
 import { PageProps } from '@/types';
 type Props = {}
 
@@ -81,11 +81,19 @@ const LobbyManagement = (props: Props) => {
 
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
-              Lobby Logs
-            </h1>
-            <p className="text-gray-600">Monitor and track lobby activity</p>
+          <div className='flex justify-between items-center'>
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
+                Lobby Logs
+              </h1>
+              <p className="text-gray-600">Monitor and track lobby activity</p>
+            </div>
+
+            <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
+              <LayoutDashboardIcon />
+              <p>Goto Dashboard</p>
+            </div>
+
           </div>
 
           {/* Stats Cards */}

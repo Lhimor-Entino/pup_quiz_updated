@@ -34,7 +34,7 @@ interface Question {
 }
 
 export default function SubjectQuestionForm() {
-    const [showModal, setShowModal] = useState<boolean>(true);
+
 
     const [questions, setQuestions] = useState<Question[]>([]);
     const [previewContent, setPreviewContent] = useState<React.ReactNode[]>([]);
@@ -46,29 +46,45 @@ export default function SubjectQuestionForm() {
     const [showPreview, setShowPreview] = useState<boolean>(true);
     const [quizTitle, setQuizTitle] = useState<string>(subject_questions[0].subject_name);
     const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
+    const [showModal, setShowModal] = useState<boolean>(subject_questions[0].subjects_questions.length < 1 ? true : false);
+
+    const [bulkQuestion, setBulkQuestions] = useState<Question[]>([]);
 
     const handleBlankCanvasClick = (): void => {
         setShowModal(false);
     };
 
+    const saveToBulkQuestion = () => {
+        if (questions.length > 0) {
+            if (questions[0].questionText.trim().length > 0 && questions[0].timeLimit.length > 0 && questions[0].points.length > 0) {
+                setBulkQuestions(prevQuestions => [
+                    ...prevQuestions,
+                    questions[0]
+                ]);
+            }
+
+        }
+    }
+
     const addQuestion = (type: 'multiple-choice' | 'true-false' | 'short-answer', level: 'easy' | 'average' | 'hard'): void => {
 
-        setQuestions(prevQuestions => [
-            ...prevQuestions,
-            {
-                id: Date.now(),
-                type: type,
-                questionText: '',
-                image: null,
-                options: type === 'multiple-choice' ? [{ id: 1, text: '', isCorrect: false }, { id: 2, text: '', isCorrect: false }, { id: 3, text: '', isCorrect: false }, { id: 4, text: '', isCorrect: false }] : [],
-                trueFalseAnswer: null,
-                shortAnswer: '',
-                timeLimit: '',
-                points: '',
-                difficulty: level, // Default difficulty
-                showDetails: true,
-            }
-        ]);
+
+        saveToBulkQuestion()
+
+        setQuestions([{
+            id: Date.now(),
+            type: type,
+            questionText: '',
+            image: null,
+            options: type === 'multiple-choice' ? [{ id: 1, text: '', isCorrect: false }, { id: 2, text: '', isCorrect: false }, { id: 3, text: '', isCorrect: false }, { id: 4, text: '', isCorrect: false }] : [],
+            trueFalseAnswer: null,
+            shortAnswer: '',
+            timeLimit: '',
+            points: '',
+            difficulty: level, // Default difficulty
+            showDetails: true,
+        }]
+        );
     };
 
     const handleQuestionChange = (id: number, field: keyof Question, value: string | boolean | null): void => {
@@ -183,6 +199,7 @@ export default function SubjectQuestionForm() {
         const QuestionTable = ({ questions, difficulty, difficultyLabel }) => (
             <Table>
                 <TableCaption>A list of {difficultyLabel} Questions.</TableCaption>
+
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[100px]">Question</TableHead>
@@ -569,23 +586,35 @@ export default function SubjectQuestionForm() {
 
     const totalPoints = useMemo<number>(() => {
         const saveQuestionsTotalPoints = subject_questions[0].subjects_questions.reduce((sum, q) => sum + (parseInt(q.points) || 0), 0);
+        const addedBulkQuestionsTotalPoints = bulkQuestion.reduce((sum, q) => sum + (parseInt(q.points) || 0), 0);
         const addedQuestionsTotalPoints = questions.reduce((sum, q) => sum + (parseInt(q.points) || 0), 0);
-        return saveQuestionsTotalPoints + addedQuestionsTotalPoints
-    }, [questions, subject_questions]);
+        return saveQuestionsTotalPoints + addedQuestionsTotalPoints + addedBulkQuestionsTotalPoints
+    }, [questions, bulkQuestion, subject_questions]);
 
     const totalTimeLimit = useMemo<number>(() => {
 
         const saveQuestionsTotalTime = subject_questions[0].subjects_questions.reduce((sum, q) => sum + (parseInt(q.timeLimit) || 0), 0);
+        const addedBulkQuestionsTotalTime = bulkQuestion.reduce((sum, q) => sum + (parseInt(q.timeLimit) || 0), 0);
         const addedQuestionsTotalTime = questions.reduce((sum, q) => sum + (parseInt(q.timeLimit) || 0), 0);
-        return saveQuestionsTotalTime + addedQuestionsTotalTime
-    }, [questions, subject_questions]);
 
-    const totalQuestionsCount = questions.length;
+        return saveQuestionsTotalTime + addedQuestionsTotalTime + addedBulkQuestionsTotalTime
+    }, [questions, bulkQuestion, subject_questions]);
 
+    // const totalQuestionsCount = questions.length;
+    const totalQuestionsCount = questions.length + bulkQuestion.length;
     useEffect(() => {
         updatePreview()
     }, [subject_questions])
     const handleSave = (): void => {
+        // compute the new state manually
+        let updatedBulk = bulkQuestion
+        if (questions.length > 0) {
+            if (questions[0].questionText.trim().length > 0 && questions[0].timeLimit.length > 0 && questions[0].points.length > 0) {
+                updatedBulk = [...bulkQuestion, questions[0]];
+            }
+
+        }
+
 
         let quizes_questions = []
 
@@ -604,7 +633,7 @@ export default function SubjectQuestionForm() {
             });
             return
         }
-        questions.forEach(question => {
+        updatedBulk.forEach(question => {
             const quizData = {
                 title: quizTitle,
                 subject_id: subjectId as number, // or as string, depending on what it is
@@ -652,6 +681,8 @@ export default function SubjectQuestionForm() {
                     setQuestions([]);
                     setPreviewContent([]);
                     setShowPreview(false);
+                    setBulkQuestions([]);
+
 
                 },
                 onError: (errors) => {
@@ -707,6 +738,8 @@ export default function SubjectQuestionForm() {
     useEffect(() => {
         setQuizTitle(subject_questions[0].subject_name)
     }, [subject_questions])
+
+
     return (
         <AuthenticatedLayout>
             <Head title="Create Quiz" />
@@ -714,6 +747,7 @@ export default function SubjectQuestionForm() {
             {
                 showEditModal && <EditModal setShow={setShowEditModal} show={showEditModal} question={selectedQuestion} />
             }
+
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowModal(false)}>
                     <div className="bg-white p-6 rounded-lg w-full max-w-4xl relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -860,9 +894,12 @@ export default function SubjectQuestionForm() {
                                                 id={`question-text-${q.id}`}
                                                 type="text"
                                                 placeholder="Enter question text"
-                                                className="w-full border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
+                                                className="w-full border p-2 rounded-md focus:ring-black focus:border-black"
                                                 value={q.questionText}
-                                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleQuestionChange(q.id, 'questionText', e.target.value)}
+                                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                                    const value = e.target.value.replace(/\?/g, ''); // remove all “?”
+                                                    handleQuestionChange(q.id, 'questionText', value);
+                                                }}
                                             />
                                         </div>
 
@@ -911,7 +948,7 @@ export default function SubjectQuestionForm() {
                                                         <input
                                                             type="text"
                                                             placeholder={`Option ${index + 1}`}
-                                                            className="flex-grow border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
+                                                            className="flex-grow border p-2 rounded-md focus:ring-black focus:border-black"
                                                             value={opt.text}
                                                             onChange={(e: ChangeEvent<HTMLInputElement>) => handleOptionChange(q.id, opt.id, 'text', e.target.value)}
                                                         />
@@ -957,7 +994,7 @@ export default function SubjectQuestionForm() {
                                                     id={`short-answer-${q.id}`}
                                                     type="text"
                                                     placeholder="Enter short answer"
-                                                    className="w-full border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
+                                                    className="w-full border p-2 rounded-md focus:ring-black focus:border-black"
                                                     value={q.shortAnswer}
                                                     onChange={(e: ChangeEvent<HTMLInputElement>) => handleQuestionChange(q.id, 'shortAnswer', e.target.value)}
                                                 />
@@ -970,9 +1007,9 @@ export default function SubjectQuestionForm() {
                                                 id={`time-limit-${q.id}`}
                                                 type="text"
                                                 placeholder="e.g., 30"
-                                                className="w-full border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
+                                                className="w-full border p-2 rounded-md focus:ring-black focus:border-black"
                                                 value={q.timeLimit}
-                                            
+
 
                                                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                                     const val = e.target.value;
@@ -991,10 +1028,9 @@ export default function SubjectQuestionForm() {
                                                 id={`points-${q.id}`}
                                                 type="text"
                                                 placeholder="e.g., 10"
-                                                className="w-full border p-2 rounded-md focus:ring-red-500 focus:border-red-500"
+                                                className="w-full border p-2 rounded-md focus:ring-black focus:border-black"
                                                 value={q.points}
-                                               
-                                                onMouseDownCapture={(e) => e.preventDefault()}
+
                                                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                                     const val = e.target.value;
                                                     if (/^\d*$/.test(val)) { // ✅ allow only digits (0–9) or empty
@@ -1086,7 +1122,10 @@ export default function SubjectQuestionForm() {
                     </button>
                     <div className="flex gap-2 w-full">
                         <button
-                            onClick={handleSave}
+
+                            onClick={() => {
+                                handleSave()
+                            }}
                             className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md flex-1 flex items-center justify-center hover:bg-red-700 transition-colors font-semibold"
                         >
                             <Save size={18} className="mr-2" /> Save

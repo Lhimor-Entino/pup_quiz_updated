@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, BookOpen, Award, Target } from 'lucide-react';
+import { TrendingUp, BookOpen, Award, Target, LayoutDashboardIcon } from 'lucide-react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 const QuizStatisticsDashboard = () => {
   const { questions, categories, topLobbyCategory } = usePage().props
   const [totalEasyQuestion, setTotalEasyQuestion] = useState(0)
@@ -58,11 +58,11 @@ const QuizStatisticsDashboard = () => {
       return acc;
     }, {});
 
-const result = categories?.map((subject, index) => ({
-  name: subject.subject_name,
-  count: questionCounts[subject.id] || 0,
-  color: redShades[Math.floor(Math.random() * redShades.length)]
-}));
+    const result = categories?.map((subject, index) => ({
+      name: subject.subject_name,
+      count: questionCounts[subject.id] || 0,
+      color: redShades[Math.floor(Math.random() * redShades.length)]
+    }));
     setCategoriesQuestions(result)
   }, [categories, questions])
   const StatCard = ({ icon: Icon, title, value, subtitle, gradient }) => (
@@ -89,9 +89,10 @@ const result = categories?.map((subject, index) => ({
           <div className='col-span-5 space-y-6'>
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold text-red-800 tracking-tight">Quiz Statistics Dashboard</h1>
-              <div className="text-sm text-red-600 bg-red-100 px-3 py-1 rounded-full">
-                Last updated: Today
-              </div>
+               <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
+                            <LayoutDashboardIcon />
+                            <p>Goto Dashboard</p>
+                        </div>
             </div>
 
 
@@ -133,36 +134,36 @@ const result = categories?.map((subject, index) => ({
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-red-200">
                 <h3 className="text-xl font-semibold text-red-800 mb-4">Questions by Difficulty Level</h3>
                 <ResponsiveContainer width="100%" height={300}>
-<BarChart data={byLevel}>
-  <CartesianGrid strokeDasharray="3 3" stroke="#fecaca" />
-  <XAxis
-    dataKey="level"
-    stroke="#dc2626"
-    fontSize={12}
-  />
-  <YAxis
-    stroke="#dc2626"
-    fontSize={12}
-  />
-  <Tooltip
-    contentStyle={{
-      backgroundColor: '#fef2f2',
-      border: '1px solid #fecaca',
-      borderRadius: '8px'
-    }}
-  />
-  <Bar
-    dataKey="count"
-    fill="url(#redGradient)"
-    radius={[4, 4, 0, 0]}
-  />
-  <defs>
-    <linearGradient id="redGradient" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#ef4444" />
-      <stop offset="100%" stopColor="#dc2626" />
-    </linearGradient>
-  </defs>
-</BarChart>
+                  <BarChart data={byLevel}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#fecaca" />
+                    <XAxis
+                      dataKey="level"
+                      stroke="#dc2626"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      stroke="#dc2626"
+                      fontSize={12}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill="url(#redGradient)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <defs>
+                      <linearGradient id="redGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#ef4444" />
+                        <stop offset="100%" stopColor="#dc2626" />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
 
@@ -193,49 +194,49 @@ const result = categories?.map((subject, index) => ({
                     />
                   </PieChart>
                    */}
-                   <PieChart>
-  <Pie
-    data={categoriesQuestions}
-    cx="50%"
-    cy="50%"
-    innerRadius={60}
-    outerRadius={100}
-    paddingAngle={5}
-    dataKey="count"
-  >
-    {categoriesQuestions.map((entry, index) => {
-      // Red color palette with different shades
-      const redColors = [
-        '#fca5a5', // red-300
-        '#f87171', // red-400
-        '#ef4444', // red-500
-        '#dc2626', // red-600
-        '#b91c1c', // red-700
-        '#991b1b', // red-800
-        '#7f1d1d', // red-900
-        '#fda4af', // rose-300
-        '#f43f5e', // rose-500
-        '#e11d48', // rose-600
-        '#be123c', // rose-700
-        '#9f1239'  // rose-800
-      ];
-      
-      return (
-        <Cell 
-          key={`cell-${index}`} 
-          fill={redColors[index % redColors.length]} 
-        />
-      );
-    })}
-  </Pie>
-  <Tooltip
-    contentStyle={{
-      backgroundColor: '#fff1f2',
-      border: '1px solid #fda4af',
-      borderRadius: '8px'
-    }}
-  />
-</PieChart>
+                  <PieChart>
+                    <Pie
+                      data={categoriesQuestions}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="count"
+                    >
+                      {categoriesQuestions.map((entry, index) => {
+                        // Red color palette with different shades
+                        const redColors = [
+                          '#fca5a5', // red-300
+                          '#f87171', // red-400
+                          '#ef4444', // red-500
+                          '#dc2626', // red-600
+                          '#b91c1c', // red-700
+                          '#991b1b', // red-800
+                          '#7f1d1d', // red-900
+                          '#fda4af', // rose-300
+                          '#f43f5e', // rose-500
+                          '#e11d48', // rose-600
+                          '#be123c', // rose-700
+                          '#9f1239'  // rose-800
+                        ];
+
+                        return (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={redColors[index % redColors.length]}
+                          />
+                        );
+                      })}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fff1f2',
+                        border: '1px solid #fda4af',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 space-y-2">
                   {categoriesQuestions.map((category, index) => (

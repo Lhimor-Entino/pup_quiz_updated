@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Search, User, Clock, MapPin, Filter, Save, FilePenLineIcon, Trash2Icon, Calendar1Icon } from 'lucide-react';
-import { usePage } from '@inertiajs/react';
+import { Search, User, Clock, MapPin, Filter, Save, FilePenLineIcon, Trash2Icon, Calendar1Icon, LayoutDashboardIcon } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import axios from 'axios';
 import {
@@ -123,41 +123,49 @@ const Scoring = (props: Props) => {
     setFilteredData(newData);
   }, [filterActive, sessionData]);
 
-useEffect(() => {
+  useEffect(() => {
 
-   if (!date) return;
-  const phDateStr = new Intl.DateTimeFormat("en-PH", {
-    timeZone: "Asia/Manila",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(date)) // format your selected calendar date
-
- const newData = sessionData.filter(session => {
-    const sessionDateStr = new Intl.DateTimeFormat("en-PH", {
+    if (!date) return;
+    const phDateStr = new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }).format(new Date(session.created_at)) // format DB date too
-    
-    return sessionDateStr === phDateStr
-  })
+    }).format(new Date(date)) // format your selected calendar date
 
-  setFilteredData(newData)
-}, [date, sessionData])
+    const newData = sessionData.filter(session => {
+      const sessionDateStr = new Intl.DateTimeFormat("en-PH", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(session.created_at)) // format DB date too
+
+      return sessionDateStr === phDateStr
+    })
+
+    setFilteredData(newData)
+  }, [date, sessionData])
 
   return (
     <AuthenticatedLayout>
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-amber-50 to-yellow-50 p-6">
-      
+
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
-              Leaderboard Logs
-            </h1>
-            <p className="text-gray-600">Monitor and track leaderboard. </p>
+
+          <div className='flex justify-between items-center'>
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
+                Leaderboard Logs
+              </h1>
+              <p className="text-gray-600">Monitor and track leaderboard. </p>
+            </div>
+            <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
+              <LayoutDashboardIcon />
+              <p>Goto Dashboard</p>
+            </div>
           </div>
+
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -240,10 +248,10 @@ useEffect(() => {
                 <Popover>
                   <PopoverTrigger className=' flex items-center gap-x-2 border border-slate-300 px-3 py-3 rounded-md bg-red-400 hover-bg-red-400 text-white'>
                     <>
-                        <Calendar1Icon className='w-5 h-5' />
-                        Quiz Date
+                      <Calendar1Icon className='w-5 h-5' />
+                      Quiz Date
                     </>
-                
+
                   </PopoverTrigger>
                   <PopoverContent>   <Calendar
                     mode="single"

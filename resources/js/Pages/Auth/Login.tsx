@@ -10,7 +10,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { Home } from 'lucide-react';
+import { Eye, EyeOff, Home } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -27,6 +27,7 @@ export default function Login({
         password: '',
         remember: false as boolean,
     });
+    const [showPassword, setShowPassword] = useState<boolean>(false)
     const [openOTPModal, setOpenOTPModal] = useState(false)
     const submit: FormEventHandler = async (e) => {
         e.preventDefault();
@@ -122,7 +123,7 @@ export default function Login({
                         />
                     </div>
 
-                    <div>
+                    {/* <div>
                         <InputLabel htmlFor="password" value="Password" className="text-red-600 text-base font-bold" />
                         <TextInput
                             id="password"
@@ -133,6 +134,32 @@ export default function Login({
                             autoComplete="current-password"
                             onChange={(e) => setData('password', e.target.value)}
                         />
+                        <InputError message={errors.password} className="mt-2" />
+                    </div> */}
+                    <div className="relative">
+                        <InputLabel
+                            htmlFor="password"
+                            value="Password"
+                            className="text-red-600 text-base font-bold"
+                        />
+                        <div className="relative">
+                            <TextInput
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                name="password"
+                                value={data.password}
+                                className="mt-1 block w-full border-0 border-b border-red-600 focus:border-red-500 focus:ring-0 bg-transparent px-0 text-gray-700 rounded-none hover:bg-slate-200 transition-colors pr-10"
+                                autoComplete="current-password"
+                                onChange={(e) => setData('password', e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
                         <InputError message={errors.password} className="mt-2" />
                     </div>
 

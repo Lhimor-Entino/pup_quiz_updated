@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Search, User, Clock, MapPin, Calendar, Filter, BanIcon, UserRoundCheckIcon, Hash } from 'lucide-react';
+import { Search, User, Clock, MapPin, Calendar, Filter, BanIcon, UserRoundCheckIcon, Hash, LayoutDashboardIcon, Eye } from 'lucide-react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
+import Swal from 'sweetalert2';
+import { Button } from '@/Components/ui/button';
 type Props = {}
 
 const PreRegistrationLogs = (props: Props) => {
@@ -58,7 +60,7 @@ const PreRegistrationLogs = (props: Props) => {
 
         if (filterActive === 'all') return matchesSearch;
         if (filterActive === 'active') return matchesSearch && session.status === 2;
-        if (filterActive === 'ended') return matchesSearch && session.status ===1;
+        if (filterActive === 'ended') return matchesSearch && session.status === 1;
 
         return matchesSearch;
     });
@@ -75,20 +77,120 @@ const PreRegistrationLogs = (props: Props) => {
             hour12: false, // set to true if you want AM/PM
         });
     }
+    // Function to handle viewing files
+    const handleViewFiles = (files) => {
+        // files should be an array of file objects with properties: url, type, name
+        // Example: [{ url: 'path/to/file.pdf', type: 'pdf', name: 'document.pdf' }]
+
+        if (!files || files.length === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Files',
+                text: 'No files available to view',
+                confirmButtonColor: '#16a34a'
+            });
+            return;
+        }// group files by person name in parentheses, e.g. "(John)"
+        const grouped = files.reduce((acc, file) => {
+            const match = file.name.match(/\((.*?)\)/); // extract text inside parentheses
+            const personName = match ? match[1] : 'Unknown'; // default fallback
+
+            if (!acc[personName]) acc[personName] = [];
+            acc[personName].push(file);
+            return acc;
+        }, {});
+
+        // Generate HTML content for multiple files
+        const filesHTML = Object.entries(grouped).map(([personName, personFiles]) => {
+            const fileCards = personFiles.map((file, index) => {
+                if (file.type === 'pdf' || file.url.toLowerCase().endsWith('.pdf')) {
+                    return `
+            <div class="w-1/3 p-2 text-center">
+              <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
+              <iframe 
+                src="${file.url}" 
+                width="100%" 
+                height="300px" 
+                style="border: 1px solid #ddd; border-radius: 8px;"
+              ></iframe>
+              <a href="${file.url}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                Open in New Tab
+              </a>
+            </div>
+          `;
+                } else if (file.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.url)) {
+                    return `
+            <div class="w-1/3 p-2 text-center">
+              <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
+              <img 
+                src="${file.url}" 
+                alt="${file.name}" 
+                style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+              />
+              <a href="${file.url}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                View Full Size
+              </a>
+            </div>
+          `;
+                } else {
+                    return `
+            <div class="w-1/3 p-2 text-center">
+              <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
+              <p class="text-gray-600 mb-2">File type not supported for preview</p>
+              <a href="${file.url}" target="_blank" class="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                Download File
+              </a>
+            </div>
+          `;
+                }
+            }).join('');
+
+            return `
+        <div class="mb-8 pb-4 border-b">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">${personName}</h3>
+          <div class="flex flex-wrap -m-2">
+            ${fileCards}
+          </div>
+        </div>
+      `;
+        }).join('');
+        Swal.fire({
+            title: 'View Files',
+            html: `
+                <div style="max-height: 600px; overflow-y: auto; text-align: left;">
+                    ${filesHTML}
+                </div>
+            `,
+            width: '80%',
+            showCloseButton: true,
+            showConfirmButton: false,
+            customClass: {
+                popup: 'swal-wide',
+                htmlContainer: 'swal-html-container'
+            }
+        });
+    };
     return (
         <AuthenticatedLayout>
             <div className="min-h-screen bg-gradient-to-br from-red-50 via-amber-50 to-yellow-50 p-6">
 
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
-                            Pre Registration Logs
+                    <div className='flex justify-between items-center'>
+                        <div className="mb-8">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
+                                Pre Registration Logs
 
-                        </h1>
-                        <p className="text-gray-600">Monitor and track Pre Registration activity</p>
-                       
+                            </h1>
+                            <p className="text-gray-600">Monitor and track Pre Registration activity</p>
+
+                        </div>
+                        <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
+                            <LayoutDashboardIcon />
+                            <p>Goto Dashboard</p>
+                        </div>
                     </div>
+
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -128,7 +230,7 @@ const PreRegistrationLogs = (props: Props) => {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
                                     type="text"
-                                      placeholder="Search by team name or team leader name..."
+                                    placeholder="Search by team name or team leader name..."
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -162,6 +264,7 @@ const PreRegistrationLogs = (props: Props) => {
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-white w-fit truncate">Contact Number</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-white">Reject / Approved Date</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-white">View</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-white">Comment</th>
                                     </tr>
                                 </thead>
@@ -187,7 +290,7 @@ const PreRegistrationLogs = (props: Props) => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                             <span className="text-gray-900 font-medium w-fit truncate">{session.participant.team_leader_email}</span>
+                                                <span className="text-gray-900 font-medium w-fit truncate">{session.participant.team_leader_email}</span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center">
@@ -197,20 +300,83 @@ const PreRegistrationLogs = (props: Props) => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-md text-sm font-medium ${session.status === 1
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : 'bg-blue-100 text-blue-800'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-blue-100 text-blue-800'
                                                     }`}>
-                                                    {session.status === 1 ? 'Rejected': 'Approved'}
+                                                    {session.status === 1 ? 'Rejected' : 'Approved'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center">
+                                                <div className="flex items-center w-fit truncate">
                                                     <Clock className="w-4 h-4 text-gray-400 mr-2" />
                                                     <span className="text-gray-900 text-sm">{formatDateTime(session.created_at)}</span>
                                                 </div>
                                             </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <Button
+                                                    size='sm'
+                                                    className='bg-green-600 hover:bg-green-800'
+                                                    onClick={() => {
+                                                        const baseURL = window.location.origin + "/";
+                             
+                                                        const membersData = JSON.parse(session.participant.members)
+
+             
+                                                        // alert(JSON.stringify(membersData))
+                                                        console.log(JSON.stringify(membersData))
+                                                        // Example files array - replace with your actual data
+                                                        const files = [
+                                                            // {
+                                                            //     url: 'https://example.com/document.pdf',
+                                                            //     type: 'pdf',
+                                                            //     name: 'Registration Form.pdf'
+                                                            // },
+                                                            {
+                                                                url: '/storage/' + session.participant.student_id,
+                                                                type: 'image',
+                                                                name: `Valid Student ID (${session.participant.team_leader})`
+                                                            },
+                                                            {
+                                                                url: '/storage/' + session.participant.registration_form,
+                                                                type: 'image',
+                                                                name: `Registration Form (${session.participant.team_leader})`
+                                                            },
+                                                            {
+                                                                url: '/storage/' + session.participant.consent_form,
+                                                                type: 'image',
+                                                                name: `Consent Form (${session.participant.team_leader})`
+                                                            }
+                                                        ];
+
+                                                        membersData.forEach(member => {
+                                                            files.push(
+                                                                {
+                                                                    url: '/storage/' + member.requirements.studentId,
+                                                                    type: 'image',
+                                                                    name: `Valid Student ID (${member.name})`
+                                                                },
+                                                                {
+                                                                    url: '/storage/' + member.requirements.registrationForm,
+                                                                    type: 'image',
+                                                                    name: `Registration Form (${member.name})`
+                                                                },
+                                                                {
+                                                                    url: '/storage/' + member.requirements.consentForm,
+                                                                    type: 'image',
+                                                                    name: `Consent Form (${member.name})`
+                                                                }
+                                                            );
+                                                        });
+                                                        handleViewFiles(files);
+                                                    }}
+                                                >
+                                                    <Eye className="w-4 h-4 text-white" />
+                                                    <span>View</span>
+                                                </Button>
+
+                                            </td>
                                             <td className="px-6 py-4">
-                                                  <span className="text-gray-900 text-sm">{session.comment}</span>
+                                                <span className="text-gray-900 text-sm  w-fit  truncate">{session.comment}</span>
                                             </td>
                                         </tr>
                                     ))}

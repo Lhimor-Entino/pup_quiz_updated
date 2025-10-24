@@ -20,7 +20,7 @@ type Team = {
 
 const Lobby = () => {
   const [started, setStarted] = useState(false);
-  const { id, subject, subject_id, team_id } = usePage().props;
+  const { id, subject, subject_id, team_id, show_leaderboard_report_btn } = usePage().props;
   const { auth } = usePage<PageProps>().props;
   const [teams, setTeams] = useState<any[]>([]);
   const [startId, setStartId] = useState(null)
@@ -118,80 +118,65 @@ const Lobby = () => {
       console.log(error)
     }
   }
-  const [savingShortAns,setSavingShortAns] = useState(false)
+  const [savingShortAns, setSavingShortAns] = useState(false)
   const handleGenerateReport = async () => {
-      setSavingShortAns(true); // Indicate that a process is starting (downloading)
-      try {
-        // Make the GET request. Crucially, set responseType to 'blob'
-        // This tells axios to expect binary data and return it as a Blob object.
-  
-        const response = await axios.get(`/report/teams/excel/${id}/${subject_id}`, {
-          responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
-        });
-  
-        // Check if the response is successful
-        if (response.status === 200) {
-          // --- Extract Filename (Optional but Recommended) ---
-          // Try to get the filename from the Content-Disposition header
-          let filename = 'teams_report.xlsx'; // Default filename if header is not present
-          const contentDisposition = response.headers['content-disposition'];
-          if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-            if (filenameMatch && filenameMatch[1]) {
-              filename = filenameMatch[1];
-            }
+    setSavingShortAns(true); // Indicate that a process is starting (downloading)
+    try {
+      // Make the GET request. Crucially, set responseType to 'blob'
+      // This tells axios to expect binary data and return it as a Blob object.
+
+      const response = await axios.get(`/report/teams/excel/${id}/${subject_id}`, {
+        responseType: 'blob', // Important! This tells Axios to handle the response as binary data (Blob)
+      });
+
+      // Check if the response is successful
+      if (response.status === 200) {
+        // --- Extract Filename (Optional but Recommended) ---
+        // Try to get the filename from the Content-Disposition header
+        let filename = 'teams_report.xlsx'; // Default filename if header is not present
+        const contentDisposition = response.headers['content-disposition'];
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1];
           }
-  
-          // --- Create a Download Link ---
-          // Create a URL for the Blob data
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-  
-          // Create a temporary <a> tag
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', filename); // Set the download attribute with the filename
-          document.body.appendChild(link); // Append to body (required for Firefox)
-          link.click(); // Programmatically click the link to trigger download
-          link.remove(); // Clean up the temporary link
-  
-          // Revoke the object URL to free up memory
-          window.URL.revokeObjectURL(url);
-  
-          // Show success message
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success', // Changed to success icon for download
-            title: 'Report downloaded successfully!', // Appropriate message
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            background: '#fff',
-            color: '#399918',
-            iconColor: '#399918',
-          });
-        } else {
-          // Handle non-200 responses if necessary
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'error',
-            title: `Download failed: ${response.status}`,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            background: '#fff',
-            color: '#dc3545',
-            iconColor: '#dc3545',
-          });
         }
-      } catch (error) {
-        console.error('Error during report download:', error);
+
+        // --- Create a Download Link ---
+        // Create a URL for the Blob data
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+
+        // Create a temporary <a> tag
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename); // Set the download attribute with the filename
+        document.body.appendChild(link); // Append to body (required for Firefox)
+        link.click(); // Programmatically click the link to trigger download
+        link.remove(); // Clean up the temporary link
+
+        // Revoke the object URL to free up memory
+        window.URL.revokeObjectURL(url);
+
+        // Show success message
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success', // Changed to success icon for download
+          title: 'Report downloaded successfully!', // Appropriate message
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: '#fff',
+          color: '#399918',
+          iconColor: '#399918',
+        });
+      } else {
+        // Handle non-200 responses if necessary
         Swal.fire({
           toast: true,
           position: 'top-end',
           icon: 'error',
-          title: 'An error occurred during download.',
+          title: `Download failed: ${response.status}`,
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,
@@ -199,10 +184,25 @@ const Lobby = () => {
           color: '#dc3545',
           iconColor: '#dc3545',
         });
-      } finally {
-        setSavingShortAns(false); // Reset loading state
       }
-    };
+    } catch (error) {
+      console.error('Error during report download:', error);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'An error occurred during download.',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#fff',
+        color: '#dc3545',
+        iconColor: '#dc3545',
+      });
+    } finally {
+      setSavingShortAns(false); // Reset loading state
+    }
+  };
   return (
     <AuthenticatedLayout>
       <Head title="Event Rooms Lobby" />
@@ -356,50 +356,56 @@ const Lobby = () => {
           )}
 
           {/* Enhanced Start Button */}
-          {(auth?.user?.role == 1 || auth?.user?.role == 3) && (
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={handleStartQuiz}
-                disabled={loading || teams.length < 1}
-                className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-orange-400 disabled:to-orange-500 text-white px-12 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl shadow-orange-200/50 hover:shadow-orange-300/60 transform hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {/* Button background glow */}
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
 
-                <div className="relative flex items-center gap-3">
-                  {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Starting Please Wait...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Trophy className="w-5 h-5" />
-                      <span>Proceed to Quiz</span>
-                    </>
-                  )}
-                </div>
-              </button>
+
+          {show_leaderboard_report_btn == 0  &&
+            (auth?.user?.role == 1 || auth?.user?.role == 3) && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={handleStartQuiz}
+                  disabled={loading || teams.length < 1}
+                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-orange-400 disabled:to-orange-500 text-white px-12 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl shadow-orange-200/50 hover:shadow-orange-300/60 transform hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {/* Button background glow */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+
+                  <div className="relative flex items-center gap-3">
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Starting Please Wait...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Trophy className="w-5 h-5" />
+                        <span>Proceed to Quiz</span>
+                      </>
+                    )}
+                  </div>
+                </button>
+              </div>
+
+
+            )
+          }
+          {show_leaderboard_report_btn == 1 &&
+
+            <div className='flex justify-center space-x-10 mt-5'>
+              <div className='flex justify-center mt-10'>
+                <Button onClick={() => getLeaderboard()} className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
+                  Show Leaderboard
+                </Button>
+              </div>
+              <div className='flex justify-center mt-10'>
+                <Button disabled={savingShortAns} onClick={() => handleGenerateReport()} className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
+                  {
+                    savingShortAns ? " Downloading ..." : " Generate Report"
+                  }
+
+                </Button>
+              </div>
             </div>
-
-
-          )}
-
-          <div className='flex justify-center space-x-10 mt-5'>
-            <div className='flex justify-center mt-10'>
-              <Button onClick={() => getLeaderboard()}className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
-                Show Leaderboard
-              </Button>
-            </div>
-            <div className='flex justify-center mt-10'>
-              <Button disabled={savingShortAns} onClick={() => handleGenerateReport()} className='bg-transparent text-1xl p-5 text-orange-700 hover:bg-orange-600 hover:text-white'>
-                {
-                  savingShortAns ? " Downloading ...":" Generate Report"
-                }
-               
-              </Button>
-            </div>
-          </div>
+          }
 
           <LeaderboardModal
             isOpen={isModalOpen}

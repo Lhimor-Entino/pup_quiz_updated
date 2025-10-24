@@ -165,20 +165,20 @@ function ManagePreRegistration({ }: Props) {
             });
             return;
         }// group files by person name in parentheses, e.g. "(John)"
-const grouped = files.reduce((acc, file) => {
-  const match = file.name.match(/\((.*?)\)/); // extract text inside parentheses
-  const personName = match ? match[1] : 'Unknown'; // default fallback
+        const grouped = files.reduce((acc, file) => {
+            const match = file.name.match(/\((.*?)\)/); // extract text inside parentheses
+            const personName = match ? match[1] : 'Unknown'; // default fallback
 
-  if (!acc[personName]) acc[personName] = [];
-  acc[personName].push(file);
-  return acc;
-}, {});
+            if (!acc[personName]) acc[personName] = [];
+            acc[personName].push(file);
+            return acc;
+        }, {});
 
         // Generate HTML content for multiple files
-    const filesHTML = Object.entries(grouped).map(([personName, personFiles]) => {
-  const fileCards = personFiles.map((file, index) => {
-    if (file.type === 'pdf' || file.url.toLowerCase().endsWith('.pdf')) {
-      return `
+        const filesHTML = Object.entries(grouped).map(([personName, personFiles]) => {
+            const fileCards = personFiles.map((file, index) => {
+                if (file.type === 'pdf' || file.url.toLowerCase().endsWith('.pdf')) {
+                    return `
         <div class="w-1/3 p-2 text-center">
           <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
           <iframe 
@@ -192,8 +192,8 @@ const grouped = files.reduce((acc, file) => {
           </a>
         </div>
       `;
-    } else if (file.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.url)) {
-      return `
+                } else if (file.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.url)) {
+                    return `
         <div class="w-1/3 p-2 text-center">
           <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
           <img 
@@ -206,8 +206,8 @@ const grouped = files.reduce((acc, file) => {
           </a>
         </div>
       `;
-    } else {
-      return `
+                } else {
+                    return `
         <div class="w-1/3 p-2 text-center">
           <h4 class="font-semibold text-gray-700 mb-2">${file.name.replace(/\s*\(.*?\)\s*/, '')}</h4>
           <p class="text-gray-600 mb-2">File type not supported for preview</p>
@@ -216,10 +216,10 @@ const grouped = files.reduce((acc, file) => {
           </a>
         </div>
       `;
-    }
-  }).join('');
+                }
+            }).join('');
 
-  return `
+            return `
     <div class="mb-8 pb-4 border-b">
       <h3 class="text-xl font-bold text-gray-800 mb-4">${personName}</h3>
       <div class="flex flex-wrap -m-2">
@@ -227,7 +227,7 @@ const grouped = files.reduce((acc, file) => {
       </div>
     </div>
   `;
-}).join('');
+        }).join('');
         Swal.fire({
             title: 'View Files',
             html: `
@@ -360,12 +360,12 @@ const grouped = files.reduce((acc, file) => {
                                                             {
                                                                 url: '/storage/' + session.registration_form,
                                                                 type: 'image',
-                                                                    name: `Valid Student ID (${session.team_leader})`
+                                                                name: `Registration Form (${session.team_leader})`
                                                             },
                                                             {
                                                                 url: '/storage/' + session.consent_form,
                                                                 type: 'image',
-                                                                   name: `Valid Student ID (${session.team_leader})`
+                                                                name: `Consent Form (${session.team_leader})`
                                                             }
                                                         ];
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\QuizEvent;
+use App\Models\EndedEvent;
 use App\Models\LeaderboardLog;
 use App\Models\Lobby;
 use App\Models\Participants;
@@ -50,7 +51,10 @@ class QuizEventController extends Controller
             'current_level' => '',
             'levels_finished' => ''
         ]);
-
+       
+        EndedEvent::create([
+            "lobby_id" => $id
+        ]);
 
         $lobby = Lobby::find($id);
 

@@ -11,6 +11,7 @@ class Lobby extends Model
 
     protected $fillable = [
         'name',
+        'start_date',
         'lobby_code',
         'user_id'
     ];

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Search, User, Clock, MapPin, Calendar, Filter, Save, FilePenLineIcon, Trash2Icon } from 'lucide-react';
-import { usePage } from '@inertiajs/react';
+import { Search, User, Clock, MapPin, Calendar, Filter, Save, FilePenLineIcon, Trash2Icon, LayoutDashboardIcon } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 type Props = {}
 
@@ -80,21 +80,29 @@ const QuizManagement = (props: Props) => {
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-amber-50 to-yellow-50 p-6">
 
         <div className="max-w-7xl mx-auto">
-    {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
-              Quiz Logs
-            </h1>
-            <p className="text-gray-600">Monitor and track quiz activity</p>
-          </div>
+          {/* Header */}
+         <div className='flex justify-between items-center'>    
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
+                Quiz Logs
+              </h1>
+              <p className="text-gray-600">Monitor and track quiz activity</p>
+            </div>
 
+            <div onClick={() => router.get("/organizerLobby")} className='bg-red-500 text-white p-4 flex gap-x-3 rounded-md hover:bg-red-700 hover:cursor-pointer'>
+              <LayoutDashboardIcon />
+              <p>Goto Dashboard</p>
+            </div>
+          </div>
+    
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-lg border-l-4 border-red-500 p-6 hover:shadow-xl transition-shadow duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Question</p>
-                  <p className="text-2xl font-bold text-gray-900">{sessionData.length}</p>
+              
+                  <p className="text-2xl font-bold text-gray-900">{(sessionData.filter(s => s.action == 0).length || 0)  }</p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-full">
                   <User className="w-6 h-6 text-red-600" />
@@ -152,7 +160,7 @@ const QuizManagement = (props: Props) => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search by ID or IP address..."
+                  placeholder="Search question..."
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -183,7 +191,7 @@ const QuizManagement = (props: Props) => {
                   <tr>
 
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white">User ID</th>
-                    
+
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white">Question Name</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white">Question Type</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white">Question Level</th>
@@ -213,7 +221,7 @@ const QuizManagement = (props: Props) => {
                       <td className="px-6 py-4 capitalize">
                         {session.question.type}
                       </td>
-                       <td className="px-6 py-4 capitalize">
+                      <td className="px-6 py-4 capitalize">
                         {session.question.difficulty}
                       </td>
                       <td className="px-6 py-4">
@@ -254,7 +262,7 @@ const QuizManagement = (props: Props) => {
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-gray-500 text-sm">
-              Showing {filteredData.length} of {sessionData.length} sessions
+              Showing {filteredData.length} of {sessionData.length} questions
             </p>
           </div>
         </div>

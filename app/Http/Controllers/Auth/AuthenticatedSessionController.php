@@ -55,12 +55,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-
-        SessionLogs::where('user_id', Auth::id())
+        $log = SessionLogs::where('user_id', Auth::id())
             ->whereNull('logout_timestamp')
-            ->update([
-                'logout_timestamp' => Carbon::now('Asia/Manila'),
-            ]);
+            ->first();
+
+        if (!$log) {
+            dd('No session found for this user without a logout_timestamp');
+        }
+        $log->logout_timestamp = Carbon::now('Asia/Manila');
+        $log->save();
+        // SessionLogs::where('user_id', Auth::id())
+        //     ->whereNull('logout_timestamp')
+        //     ->update([
+        //         'logout_timestamp' => Carbon::now('Asia/Manila'),
+        //     ]);
 
         Auth::guard('web')->logout();
 

@@ -106,6 +106,41 @@ export default function PreRegistrationForm() {
     const handleSubmit = async () => {
         //         alert(JSON.stringify(formData.signedConsentForm))
         // return
+        const { studentId, consentForm, registrationForm, certification } = formDataDoc;
+
+        // Check if any file is missing or certification is false
+        const isValid =
+            studentId !== null &&
+            consentForm !== null &&
+            registrationForm !== null &&
+            certification === true;
+
+        if (!isValid) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Team Leader Documents is required",
+                confirmButtonColor: "#f97316",
+            });
+            return;
+        }
+        const allMembersValid = formData.members.every(member =>
+            member.name.trim() !== '' &&
+            member.studentNumber.trim() !== '' &&
+            member.courseYear.trim() !== '' &&
+            member.requirements.studentId !== null &&
+            member.requirements.registrationForm !== null &&
+            member.requirements.consentForm !== null
+        );
+        if (!allMembersValid) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "All fields is required",
+                confirmButtonColor: "#f97316",
+            });
+            return;
+        }
         if (!csrfToken) {
             console.error("CSRF token not found");
             return;
@@ -410,7 +445,7 @@ export default function PreRegistrationForm() {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleInputChange}
-                                    placeholder="example@pup.edu.ph"
+                                    placeholder="example@gmail.com"
                                     className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                 />
                             </div>
@@ -870,18 +905,18 @@ export default function PreRegistrationForm() {
     };
 
     const handleDropForMember = (
-    e: DragEvent<HTMLDivElement>,
-    memberIndex: number,
-    field: keyof typeof formData.members[0]['requirements']
-) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
+        e: DragEvent<HTMLDivElement>,
+        memberIndex: number,
+        field: keyof typeof formData.members[0]['requirements']
+    ) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
 
-    const newMembers = [...formData.members];
-    newMembers[memberIndex].requirements[field] = file;
-    setFormData(prev => ({ ...prev, members: newMembers }));
-};
+        const newMembers = [...formData.members];
+        newMembers[memberIndex].requirements[field] = file;
+        setFormData(prev => ({ ...prev, members: newMembers }));
+    };
 
     return (
         <>
@@ -1071,8 +1106,8 @@ export default function PreRegistrationForm() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div   onDrop={(e) => handleDropForMember(e, selectedMemberIndex,"studentId")}
-                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDrop={(e) => handleDropForMember(e, selectedMemberIndex, "studentId")}
+                                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1115,8 +1150,8 @@ export default function PreRegistrationForm() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div  onDrop={(e) => handleDropForMember(e, selectedMemberIndex,"registrationForm")}
-                                        onDragOver={(e) => e.preventDefault()}  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDrop={(e) => handleDropForMember(e, selectedMemberIndex, "registrationForm")}
+                                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1159,8 +1194,8 @@ export default function PreRegistrationForm() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div onDrop={(e) => handleDropForMember(e, selectedMemberIndex,"consentForm")}
-                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                                                    <div onDrop={(e) => handleDropForMember(e, selectedMemberIndex, "consentForm")}
+                                                        onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                                                         <label className="cursor-pointer">
                                                             <div className="flex flex-col items-center">
                                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
@@ -1228,7 +1263,7 @@ export default function PreRegistrationForm() {
                                                     Valid Student's ID *
                                                 </label>
                                                 {formDataDoc.studentId ? (
-                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
+                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50 flex justify-between">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-2">
                                                                 <Check className="w-5 h-5 text-green-600" />
@@ -1238,6 +1273,15 @@ export default function PreRegistrationForm() {
                                                             </div>
 
                                                         </div>
+                                                        <button
+                                                            onClick={() => setFormDataDoc(prev => ({
+                                                                ...prev,
+                                                                studentId: null
+                                                            }))}
+                                                            className="text-red-600 hover:text-red-800 text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
                                                     </div>
                                                 ) : (
                                                     <div onDragOver={handleDragOver}
@@ -1267,7 +1311,7 @@ export default function PreRegistrationForm() {
                                                     Registration Form *
                                                 </label>
                                                 {formDataDoc.registrationForm ? (
-                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
+                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50 flex justify-between">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-2">
                                                                 <Check className="w-5 h-5 text-green-600" />
@@ -1277,6 +1321,15 @@ export default function PreRegistrationForm() {
                                                             </div>
 
                                                         </div>
+                                                        <button
+                                                            onClick={() => setFormDataDoc(prev => ({
+                                                                ...prev,
+                                                                registrationForm: null
+                                                            }))}
+                                                            className="text-red-600 hover:text-red-800 text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
                                                     </div>
                                                 ) : (
                                                     <div onDragOver={handleDragOver}
@@ -1306,7 +1359,7 @@ export default function PreRegistrationForm() {
                                                     Signed Consent Form *
                                                 </label>
                                                 {formDataDoc.consentForm ? (
-                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50">
+                                                    <div className="border border-gray-300 rounded-lg p-4 bg-green-50 flex justify-between">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-2">
                                                                 <Check className="w-5 h-5 text-green-600" />
@@ -1316,6 +1369,15 @@ export default function PreRegistrationForm() {
                                                             </div>
 
                                                         </div>
+                                                        <button
+                                                            onClick={() => setFormDataDoc(prev => ({
+                                                                ...prev,
+                                                                consentForm: null
+                                                            }))}
+                                                            className="text-red-600 hover:text-red-800 text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
                                                     </div>
                                                 ) : (
                                                     <div onDragOver={handleDragOver}

@@ -2,6 +2,7 @@ import Footer from "@/CustomComponents/Footer";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { Eye, EyeOff } from "lucide-react";
 
 type Props = {};
 
@@ -22,13 +23,13 @@ const Form = (props: Props) => {
     email: "",
     password: "",
   });
-  
+
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
   const [showPasswordError, setShowPasswordError] = useState(false);
-
+  const [showPassword, setShowPassword] = useState<boolean>(false)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    
+
     // Reset password error when user starts typing password again
     if (e.target.name === 'password') {
       setShowPasswordError(false);
@@ -37,12 +38,12 @@ const Form = (props: Props) => {
 
   const analyzePasswordStrength = (password: string): PasswordStrength => {
     if (!password) {
-      return { 
-        score: 0, 
-        label: '', 
-        color: '', 
-        isStrong: false, 
-        suggestions: [] 
+      return {
+        score: 0,
+        label: '',
+        color: '',
+        isStrong: false,
+        suggestions: []
       };
     }
 
@@ -144,28 +145,28 @@ const Form = (props: Props) => {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '0123456789';
     const symbols = '!@#$%^&*';
-    
+
     let password = '';
-    
+
     // Ensure at least one character from each category
     password += lowercase[Math.floor(Math.random() * lowercase.length)];
     password += uppercase[Math.floor(Math.random() * uppercase.length)];
     password += numbers[Math.floor(Math.random() * numbers.length)];
     password += symbols[Math.floor(Math.random() * symbols.length)];
-    
+
     // Fill the rest randomly (total 14 characters for extra strength)
     const allChars = lowercase + uppercase + numbers + symbols;
     for (let i = 4; i < 14; i++) {
       password += allChars[Math.floor(Math.random() * allChars.length)];
     }
-    
+
     // Shuffle the password
     return password.split('').sort(() => Math.random() - 0.5).join('');
   };
 
   const handlePasswordSuggestion = () => {
     const suggestedPassword = generateStrongPassword();
-    
+
     Swal.fire({
       title: 'Strong Password Suggestion',
       html: `
@@ -238,7 +239,7 @@ const Form = (props: Props) => {
   const canProceedToNextStep = () => {
     // Check if all fields in current step are filled
     const currentFields = steps[currentStep].fields;
-    const isAllFieldsFilled = currentFields.every(field => 
+    const isAllFieldsFilled = currentFields.every(field =>
       formData[field.name as keyof typeof formData].trim() !== ''
     );
 
@@ -314,7 +315,7 @@ const Form = (props: Props) => {
             ></div>
           </div>
         </div>
-        
+
         {/* Form Content */}
         <div className="bg-transparent rounded-lg p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-2">
@@ -326,6 +327,93 @@ const Form = (props: Props) => {
 
           <form className="space-y-6" style={{ zIndex: 1000 }} onSubmit={(e) => e.preventDefault()}>
             {steps[currentStep].fields.map((field) => (
+              // <div key={field.name} className="relative">
+              //   <label
+              //     className="block text-red-500 text-lg mb-1"
+              //     htmlFor={field.name}
+              //   >
+              //     {field.label}
+              //   </label>
+              //   <input
+              //     type={field.type}
+              //     id={field.name}
+              //     name={field.name}
+              //     value={formData[field.name as keyof typeof formData]}
+              //     onChange={handleChange}
+              //     className="w-full border-0 border-b border-red-500 pb-2 text-lg focus:ring-0 focus:outline-none focus:border-b-2 bg-transparent"
+              //     placeholder=" "
+              //   />
+
+              //   {/* Password Strength Indicator */}
+              //   {field.name === 'password' && formData.password && passwordStrength && (
+              //     <div className="mt-3" style={{zIndex:100}}>
+              //       {/* Strength Label and Score */}
+              //       <div className="flex items-center justify-between mb-2">
+              //         <span className="text-sm font-medium text-gray-700">Password Strength:</span>
+              //         <span 
+              //           className="text-sm font-bold"
+              //           style={{ color: passwordStrength.color }}
+              //         >
+              //           {passwordStrength.label}
+              //         </span>
+              //       </div>
+
+              //       {/* Strength Bar */}
+              //       <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+              //         <div 
+              //           className="h-2 rounded-full transition-all duration-300"
+              //           style={{ 
+              //             width: `${(passwordStrength.score / 9) * 100}%`,
+              //             backgroundColor: passwordStrength.color 
+              //           }}
+              //         ></div>
+              //       </div>
+
+              //       {/* Error Message for Weak Password */}
+              //       {!passwordStrength.isStrong && showPasswordError && (
+              //         <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              //           <p className="text-red-700 text-sm font-medium mb-1">
+              //             ⚠️ Password is too weak for registration
+              //           </p>
+              //           <p className="text-red-600 text-xs">
+              //             You must create a stronger password to continue.
+              //           </p>
+              //         </div>
+              //       )}
+
+              //       {/* Suggestions */}
+              //       {passwordStrength.suggestions.length > 0 && (
+              //         <div className="mb-3 p-3 bg-gray-50 rounded-lg border">
+              //           <p className="text-gray-700 text-sm font-medium mb-2">
+              //             {passwordStrength.isStrong ? '✅ Great password!' : '💡 To make your password stronger:'}
+              //           </p>
+              //           {!passwordStrength.isStrong && (
+              //             <ul className="space-y-1">
+              //               {passwordStrength.suggestions.slice(0, 4).map((suggestion, index) => (
+              //                 <li key={index} className="text-sm text-gray-600 flex items-start">
+              //                   <span className="w-1 h-1 bg-gray-400 rounded-full mr-2 mt-2 flex-shrink-0"></span>
+              //                   {suggestion}
+              //                 </li>
+              //               ))}
+              //             </ul>
+              //           )}
+              //         </div>
+              //       )}
+
+              //       {/* Generate Strong Password Button */}
+              //       {!passwordStrength.isStrong && (
+              //         <button
+              //           type="button"
+              //           onClick={handlePasswordSuggestion}
+              //           style={{zIndex:100}}
+              //           className="text-sm bg-green-100 text-green-700 hover:bg-green-200 px-3 py-2 rounded-lg transition-colors border border-green-200 "
+              //         >
+              //           🔐 Generate Strong Password
+              //         </button>
+              //       )}
+              //     </div>
+              //   )}
+              // </div>
               <div key={field.name} className="relative">
                 <label
                   className="block text-red-500 text-lg mb-1"
@@ -333,37 +421,53 @@ const Form = (props: Props) => {
                 >
                   {field.label}
                 </label>
-                <input
-                  type={field.type}
-                  id={field.name}
-                  name={field.name}
-                  value={formData[field.name as keyof typeof formData]}
-                  onChange={handleChange}
-                  className="w-full border-0 border-b border-red-500 pb-2 text-lg focus:ring-0 focus:outline-none focus:border-b-2 bg-transparent"
-                  placeholder=" "
-                />
+
+                <div className="relative">
+                  <input
+                    type={field.type === "password" && showPassword ? "text" : field.type}
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name as keyof typeof formData]}
+                    onChange={handleChange}
+                    className="w-full border-0 border-b border-red-500 pb-2 text-lg focus:ring-0 focus:outline-none focus:border-b-2 bg-transparent pr-10"
+                    placeholder=" "
+                  />
+
+                  {/* 👁️ Password toggle button */}
+                  {field.name === "password" && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  )}
+                </div>
 
                 {/* Password Strength Indicator */}
-                {field.name === 'password' && formData.password && passwordStrength && (
-                  <div className="mt-3">
+                {field.name === "password" && formData.password && passwordStrength && (
+                  <div className="mt-3" style={{ zIndex: 100 }}>
                     {/* Strength Label and Score */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Password Strength:</span>
-                      <span 
+                      <span className="text-sm font-medium text-gray-700">
+                        Password Strength:
+                      </span>
+                      <span
                         className="text-sm font-bold"
                         style={{ color: passwordStrength.color }}
                       >
                         {passwordStrength.label}
                       </span>
                     </div>
-                    
+
                     {/* Strength Bar */}
                     <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                      <div 
+                      <div
                         className="h-2 rounded-full transition-all duration-300"
-                        style={{ 
+                        style={{
                           width: `${(passwordStrength.score / 9) * 100}%`,
-                          backgroundColor: passwordStrength.color 
+                          backgroundColor: passwordStrength.color,
                         }}
                       ></div>
                     </div>
@@ -384,7 +488,9 @@ const Form = (props: Props) => {
                     {passwordStrength.suggestions.length > 0 && (
                       <div className="mb-3 p-3 bg-gray-50 rounded-lg border">
                         <p className="text-gray-700 text-sm font-medium mb-2">
-                          {passwordStrength.isStrong ? '✅ Great password!' : '💡 To make your password stronger:'}
+                          {passwordStrength.isStrong
+                            ? "✅ Great password!"
+                            : "💡 To make your password stronger:"}
                         </p>
                         {!passwordStrength.isStrong && (
                           <ul className="space-y-1">
@@ -404,6 +510,7 @@ const Form = (props: Props) => {
                       <button
                         type="button"
                         onClick={handlePasswordSuggestion}
+                        style={{ zIndex: 100 }}
                         className="text-sm bg-green-100 text-green-700 hover:bg-green-200 px-3 py-2 rounded-lg transition-colors border border-green-200"
                       >
                         🔐 Generate Strong Password
@@ -412,6 +519,7 @@ const Form = (props: Props) => {
                   </div>
                 )}
               </div>
+
             ))}
 
             <div className="flex justify-between pt-8">
@@ -430,11 +538,10 @@ const Form = (props: Props) => {
                 style={{ zIndex: 100 }}
                 onClick={handleNext}
                 disabled={!canProceedToNextStep()}
-                className={`ml-auto px-8 py-3 rounded-full transition-colors ${
-                  canProceedToNextStep()
+                className={`ml-auto px-8 py-3 rounded-full transition-colors ${canProceedToNextStep()
                     ? 'bg-red-500 text-white hover:bg-red-600'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 {currentStep === steps.length - 1 ? "Sign Up" : "Continue"}
               </button>
